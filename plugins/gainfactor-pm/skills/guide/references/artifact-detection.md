@@ -77,6 +77,24 @@ Guide 不需要做到“100% 自动理解所有文档”，但必须做到：
 
 ## Artifact 识别规则
 
+### 0. PRODUCT_DEFINITION
+
+强信号：
+
+- 明确声明 artifact type 为 `PRODUCT_DEFINITION`
+- 标题含“产品定义”或 `Product Definition`
+- 同时包含产品定位、用户角色、价值机制、冷启动、商业闭环和定义状态等结构
+
+弱信号：
+
+- 文件名含 `product-definition`、`product_definition` 或“产品定义”
+
+注意：
+
+- 产品介绍、宣传文案或单页概览不能仅凭标题判为正式产品定义
+- 该 artifact 是可选上下文，不参与主流程最早阻塞点计算
+- 文档存在但没有明确状态时按 `draft` 处理
+
 ### 1. BRD
 
 强信号：
