@@ -4,40 +4,46 @@
 
 @theme {
   --color-fd-background: #ffffff;
-  --color-fd-foreground: #1c1917;
-  --color-fd-muted: #f7f7f6;
-  --color-fd-muted-foreground: #625d58;
+  --color-fd-foreground: #292a2e;
+  --color-fd-muted: #f1f2f4;
+  --color-fd-muted-foreground: #626f86;
   --color-fd-popover: #ffffff;
-  --color-fd-popover-foreground: #1c1917;
-  --color-fd-card: #fafafa;
-  --color-fd-card-foreground: #1c1917;
-  --color-fd-border: #dedbd8;
-  --color-fd-primary: #c94300;
+  --color-fd-popover-foreground: #292a2e;
+  --color-fd-card: #f7f8f9;
+  --color-fd-card-foreground: #292a2e;
+  --color-fd-border: #dcdfe4;
+  --color-fd-primary: #0c66e4;
   --color-fd-primary-foreground: #ffffff;
-  --color-fd-secondary: #f4f2f0;
-  --color-fd-secondary-foreground: #292524;
-  --color-fd-accent: #fff0e8;
-  --color-fd-accent-foreground: #9f3500;
+  --color-fd-secondary: #f1f2f4;
+  --color-fd-secondary-foreground: #172b4d;
+  --color-fd-accent: #e9f2ff;
+  --color-fd-accent-foreground: #0c66e4;
   --color-fd-ring: #ff5a00;
+  --gf-heading: #172b4d;
+  --gf-brand: #ff5a00;
+  --gf-info-subtle: #e9f2ff;
 }
 
 .dark {
-  --color-fd-background: #151515;
-  --color-fd-foreground: #f5f5f4;
-  --color-fd-muted: #202020;
-  --color-fd-muted-foreground: #b9b5b1;
-  --color-fd-popover: #1b1b1b;
-  --color-fd-popover-foreground: #f5f5f4;
-  --color-fd-card: #1b1b1b;
-  --color-fd-card-foreground: #f5f5f4;
-  --color-fd-border: #3a3836;
-  --color-fd-primary: #ff8a4c;
-  --color-fd-primary-foreground: #21150e;
-  --color-fd-secondary: #252423;
-  --color-fd-secondary-foreground: #f5f5f4;
-  --color-fd-accent: #38251b;
-  --color-fd-accent-foreground: #ffb184;
+  --color-fd-background: #101214;
+  --color-fd-foreground: #b6c2cf;
+  --color-fd-muted: #22272b;
+  --color-fd-muted-foreground: #9fadbc;
+  --color-fd-popover: #161a1d;
+  --color-fd-popover-foreground: #f1f2f4;
+  --color-fd-card: #161a1d;
+  --color-fd-card-foreground: #b6c2cf;
+  --color-fd-border: #38414a;
+  --color-fd-primary: #579dff;
+  --color-fd-primary-foreground: #101214;
+  --color-fd-secondary: #22272b;
+  --color-fd-secondary-foreground: #f1f2f4;
+  --color-fd-accent: #1c2b41;
+  --color-fd-accent-foreground: #85b8ff;
   --color-fd-ring: #ff8a4c;
+  --gf-heading: #f1f2f4;
+  --gf-brand: #ff8a4c;
+  --gf-info-subtle: #1c2b41;
 }
 
 html { scrollbar-gutter: stable; }
@@ -49,12 +55,36 @@ body {
 
 .brand-lockup { display: inline-flex; align-items: center; gap: 0.55rem; color: #ff5a00; font-size: 1.05rem; font-weight: 700; letter-spacing: -0.015em; }
 
-#nd-sidebar, #nd-toc, header { background: color-mix(in srgb, var(--color-fd-background) 96%, transparent); }
+.docs-topbar {
+  position: relative;
+  z-index: 30;
+  display: flex;
+  height: 4rem;
+  align-items: center;
+  gap: 1.25rem;
+  padding-inline: 1.5rem;
+  border-bottom: 1px solid var(--color-fd-border);
+  background: var(--color-fd-background);
+}
+
+.docs-product-title {
+  border-left: 1px solid var(--color-fd-border);
+  padding-left: 1.25rem;
+  color: var(--gf-heading);
+  font-size: 0.95rem;
+  font-weight: 650;
+}
+
+.docs-layout { --fd-docs-height: calc(100dvh - 4rem); }
+
+#nd-page { max-width: none; }
+#nd-sidebar, #nd-toc, header { background: color-mix(in srgb, var(--color-fd-background) 97%, transparent); }
 #nd-sidebar [data-active='true'], #nd-toc [data-active='true'] { color: var(--color-fd-primary); font-weight: 650; }
+#nd-sidebar [data-active='true'] { box-shadow: inset 3px 0 var(--gf-brand); }
 
 .prose {
   --tw-prose-body: var(--color-fd-foreground);
-  --tw-prose-headings: var(--color-fd-foreground);
+  --tw-prose-headings: var(--gf-heading);
   --tw-prose-links: var(--color-fd-primary);
   --tw-prose-bold: var(--color-fd-foreground);
   --tw-prose-counters: var(--color-fd-muted-foreground);
@@ -66,23 +96,23 @@ body {
   --tw-prose-code: var(--color-fd-foreground);
   --tw-prose-th-borders: var(--color-fd-border);
   --tw-prose-td-borders: var(--color-fd-border);
-  max-width: 50rem;
+  max-width: none;
   color: var(--color-fd-foreground);
   font-size: 1rem;
   line-height: 1.82;
 }
 
-.prd-title { color: var(--color-fd-foreground); font-size: clamp(2rem, 3.5vw, 2.65rem); line-height: 1.18; letter-spacing: -0.035em; }
+.prd-title { color: var(--gf-heading); font-size: clamp(2rem, 3.5vw, 2.65rem); line-height: 1.18; letter-spacing: -0.035em; }
 .prd-metadata { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; margin: 1.25rem 0 1rem; padding: 1rem 0; border-block: 1px solid var(--color-fd-border); }
 .prd-metadata div { min-width: 0; }
 .prd-metadata dt { color: var(--color-fd-muted-foreground); font-size: 0.78rem; font-weight: 500; }
-.prd-metadata dd { margin-top: 0.2rem; color: var(--color-fd-foreground); font-size: 0.92rem; font-weight: 550; }
+.prd-metadata dd { margin-top: 0.2rem; color: var(--gf-heading); font-size: 0.92rem; font-weight: 550; }
 .page-actions { justify-content: flex-end; }
 
 .prose :where(h2) { margin-top: 2.75rem; border-bottom: 1px solid var(--color-fd-border); padding-bottom: 0.65rem; font-size: 1.62rem; line-height: 1.4; letter-spacing: -0.02em; }
 .prose :where(h3) { margin-top: 2rem; font-size: 1.2rem; line-height: 1.5; }
 .prose :where(p, li) { color: var(--color-fd-foreground); }
-.prose :where(blockquote) { border: 1px solid var(--color-fd-border); border-left: 3px solid var(--color-fd-primary); border-radius: 0.5rem; background: var(--color-fd-card); padding: 0.85rem 1rem; color: var(--color-fd-muted-foreground); font-style: normal; }
+.prose :where(blockquote) { border: 1px solid var(--color-fd-border); border-left: 3px solid var(--color-fd-primary); border-radius: 0.5rem; background: var(--gf-info-subtle); padding: 0.85rem 1rem; color: var(--color-fd-foreground); font-style: normal; }
 .prose :where(table) { display: table; min-width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.94rem; line-height: 1.65; }
 .prose :where(th) { background: var(--color-fd-muted); color: var(--color-fd-foreground); font-weight: 650; }
 .prose :where(th, td) { border-color: var(--color-fd-border); padding: 0.65rem 0.8rem; vertical-align: top; }
