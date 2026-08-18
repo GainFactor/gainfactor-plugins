@@ -1,7 +1,7 @@
 {
-  "name": "gainfactor-pm-local",
+  "name": "gainfactor-plugins",
   "interface": {
-    "displayName": "GainFactor-PM Local"
+    "displayName": "GainFactor Plugins"
   },
   "plugins": [
     {
