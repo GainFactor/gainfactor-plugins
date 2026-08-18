@@ -1,0 +1,36 @@
+{
+  "name": "gainfactor-pm",
+  "version": "2.0.0+codex.20260818054136",
+  "description": "GainFactor-PM \u4ea7\u54c1\u7814\u53d1\u6d41\u7a0b",
+  "author": {
+    "name": "GainFactor"
+  },
+  "license": "MIT",
+  "keywords": [
+    "product-development",
+    "requirements",
+    "design-review",
+    "testing"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "GainFactor-PM",
+    "shortDescription": "GainFactor-PM \u4ea7\u54c1\u7814\u53d1\u6d41\u7a0b",
+    "longDescription": "GainFactor-PM \u4ea7\u54c1\u7814\u53d1\u6d41\u7a0b",
+    "developerName": "GainFactor",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Write",
+      "Review"
+    ],
+    "defaultPrompt": [
+      "\u4f7f\u7528 $guide \u626b\u63cf\u5f53\u524d\u9879\u76ee\u5e76\u63a8\u8350\u4e0b\u4e00\u6b65\u3002",
+      "\u4f7f\u7528 $prd-writer \u6839\u636e\u9700\u6c42\u548c\u7528\u6237\u65c5\u7a0b\u64b0\u5199 PRD\u3002",
+      "\u4f7f\u7528 $test-reviewer \u5ba1\u67e5\u6d4b\u8bd5\u5305\u662f\u5426\u8fbe\u5230\u51c6\u51fa\u6807\u51c6\u3002"
+    ],
+    "composerIcon": "./skills/guide/assets/gainfactor-pm-logo-small.png",
+    "logo": "./skills/guide/assets/gainfactor-pm-logo.png",
+    "logoDark": "./skills/guide/assets/gainfactor-pm-logo-dark.png"
+  }
+}

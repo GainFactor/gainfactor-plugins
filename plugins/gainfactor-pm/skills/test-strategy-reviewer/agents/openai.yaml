@@ -1,0 +1,6 @@
+interface:
+  display_name: "Test Strategy Reviewer"
+  short_description: "Review test strategies for coverage and feasibility"
+  icon_small: "./assets/gainfactor-pm-logo-small.png"
+  icon_large: "./assets/gainfactor-pm-logo.png"
+  default_prompt: "Use $test-strategy-reviewer to review this test strategy for risk coverage, feasibility, and gate criteria."

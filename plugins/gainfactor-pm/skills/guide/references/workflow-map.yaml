@@ -1,0 +1,394 @@
+version: 1
+notes:
+  - "Guardrails is cross-cutting, not a default mainline gate."
+  - "Prototype is optional and only shown when repo or user intent justifies it."
+  - "GainFactor-PM automation landing is optional and only shown when user intent or an approved Test Spec handoff justifies it."
+  - "Automation skill IDs come from the sibling gainfactor-pm-bot plugin. Values in command fields use Codex $skill-name form and must be rendered for the active host."
+  - "Use artifact-detection.md for detailed recognition and confidence rules."
+
+states:
+  - missing
+  - draft
+  - in_review
+  - approved
+  - unknown
+
+scan:
+  priority_dirs:
+    - .
+    - docs
+    - doc
+    - spec
+    - design
+    - workflow
+    - test
+    - tests
+  file_types:
+    - md
+    - yaml
+    - yml
+    - json
+    - proto
+    - graphql
+    - gql
+  evidence_order:
+    - traceability_metadata
+    - inline_status
+    - review_certificate
+    - review_report
+    - filename_or_title_heuristic
+
+lanes:
+  - id: main
+    title: 主流程
+  - id: prototype
+    title: 可选 Prototype 分支
+  - id: automation
+    title: 可选 GainFactor-PM 自动化落地分支
+  - id: guardrails
+    title: 横切 Guardrails 分支
+
+artifacts:
+  - id: BRD
+    filename_keywords: [brd]
+  - id: USER_JOURNEY
+    filename_keywords: [journey, user-journey, user_journey, uc]
+  - id: PRD
+    metadata_types: [PRD]
+    filename_keywords: [prd]
+  - id: API_CONTRACT
+    filename_keywords: [openapi, swagger, asyncapi, api-contract, api_contract, contract, graphql, schema, proto]
+  - id: HLD
+    metadata_types: [HLD]
+    filename_keywords: [hld]
+  - id: TEST_STRATEGY
+    metadata_types: [TEST_STRATEGY]
+    filename_keywords: [test-strategy, test_strategy, strategy]
+  - id: LLD
+    metadata_types: [LLD]
+    filename_keywords: [lld]
+  - id: TEST_SPEC
+    metadata_types: [TEST_SPEC]
+    filename_keywords: [test-spec, test_spec, test-package, test_package]
+  - id: RUNBOOK
+    filename_keywords: [runbook]
+  - id: PROTOTYPE
+    filename_keywords: [_prototype-manifest, prototype]
+  - id: GUARDRAILS
+    filename_keywords: [guardrails, engineering-standards, engineering_standards]
+
+artifact_routes:
+  - artifact: BRD
+    creation_node: brd-interviewer
+    creation_command: $brd-interviewer
+  - artifact: USER_JOURNEY
+    creation_node: uc-interviewer
+    creation_command: $uc-interviewer
+    do_not_suggest: [user-journey, journey, user-journey-interviewer]
+  - artifact: PRD
+    creation_node: prd-writer
+    creation_command: $prd-writer
+    review_node: prd-reviewer
+    review_command: $prd-reviewer
+  - artifact: API_CONTRACT
+    creation_node: api-writer
+    creation_command: $api-writer
+    review_node: api-reviewer
+    review_command: $api-reviewer
+  - artifact: HLD
+    creation_node: hld-writer
+    creation_command: $hld-writer
+    review_node: hld-reviewer
+    review_command: $hld-reviewer
+  - artifact: TEST_STRATEGY
+    creation_node: test-strategy-writer
+    creation_command: $test-strategy-writer
+    review_node: test-strategy-reviewer
+    review_command: $test-strategy-reviewer
+  - artifact: LLD
+    creation_node: lld-writer
+    creation_command: $lld-writer
+    review_node: lld-reviewer
+    review_command: $lld-reviewer
+  - artifact: TEST_SPEC
+    creation_node: test-spec-writer
+    creation_command: $test-spec-writer
+    review_node: test-reviewer
+    review_command: $test-reviewer
+  - artifact: RUNBOOK
+    creation_node: runbook-writer
+    creation_command: $runbook-writer
+  - artifact: PROTOTYPE
+    creation_node: prototype-designer
+    creation_command: $prototype-designer
+    review_node: prototype-reviewer
+    review_command: $prototype-reviewer
+  - artifact: GUARDRAILS
+    creation_node: guardrails-writer
+    creation_command: $guardrails-writer
+    review_node: guardrails-reviewer
+    review_command: $guardrails-reviewer
+
+nodes:
+  - id: brd-interviewer
+    lane: main
+    kind: interviewer
+    command: $brd-interviewer
+    produces: BRD
+    next: [uc-interviewer]
+
+  - id: uc-interviewer
+    lane: main
+    kind: interviewer
+    command: $uc-interviewer
+    requires:
+      - BRD: approved_or_exists
+    produces: USER_JOURNEY
+    next: [prd-writer]
+
+  - id: prd-writer
+    lane: main
+    kind: writer
+    command: $prd-writer
+    requires:
+      - BRD: approved_or_exists
+      - USER_JOURNEY: preferred
+    produces: PRD
+    next: [prd-reviewer]
+
+  - id: prd-reviewer
+    lane: main
+    kind: reviewer
+    command: $prd-reviewer
+    requires:
+      - PRD: exists
+    approves: PRD
+    next: [api-writer]
+
+  - id: prototype-designer
+    lane: prototype
+    kind: writer
+    command: $prototype-designer
+    requires:
+      - PRD: approved
+      - USER_JOURNEY: exists
+    produces: PROTOTYPE
+    show_when:
+      - frontend_repo
+      - explicit_ui_validation
+    next: [prototype-reviewer]
+
+  - id: prototype-reviewer
+    lane: prototype
+    kind: reviewer
+    command: $prototype-reviewer
+    requires:
+      - PROTOTYPE: exists
+      - PRD: approved
+      - USER_JOURNEY: exists
+    approves: PROTOTYPE
+    next: [api-writer]
+
+  - id: api-writer
+    lane: main
+    kind: writer
+    command: $api-writer
+    requires:
+      - PRD: approved
+    produces: API_CONTRACT
+    next: [api-reviewer]
+
+  - id: api-reviewer
+    lane: main
+    kind: reviewer
+    command: $api-reviewer
+    requires:
+      - API_CONTRACT: exists
+      - PRD: preferred
+    approves: API_CONTRACT
+    next: [hld-writer]
+
+  - id: hld-writer
+    lane: main
+    kind: writer
+    command: $hld-writer
+    requires:
+      - PRD: approved
+      - API_CONTRACT: approved
+    produces: HLD
+    next: [hld-reviewer]
+
+  - id: hld-reviewer
+    lane: main
+    kind: reviewer
+    command: $hld-reviewer
+    requires:
+      - HLD: exists
+      - PRD: preferred
+    approves: HLD
+    next: [test-strategy-writer]
+
+  - id: test-strategy-writer
+    lane: main
+    kind: writer
+    command: $test-strategy-writer
+    requires:
+      - PRD: approved
+      - API_CONTRACT: approved
+      - HLD: approved
+      - GUARDRAILS: optional
+    produces: TEST_STRATEGY
+    next: [test-strategy-reviewer]
+
+  - id: test-strategy-reviewer
+    lane: main
+    kind: reviewer
+    command: $test-strategy-reviewer
+    requires:
+      - TEST_STRATEGY: exists
+      - PRD: preferred
+      - API_CONTRACT: preferred
+      - HLD: preferred
+    approves: TEST_STRATEGY
+    next: [lld-writer]
+
+  - id: lld-writer
+    lane: main
+    kind: writer
+    command: $lld-writer
+    requires:
+      - PRD: approved
+      - API_CONTRACT: approved
+      - HLD: approved
+      - TEST_STRATEGY: approved
+      - GUARDRAILS: optional
+    produces: LLD
+    next: [lld-reviewer]
+
+  - id: lld-reviewer
+    lane: main
+    kind: reviewer
+    command: $lld-reviewer
+    requires:
+      - LLD: exists
+    approves: LLD
+    next: [test-spec-writer]
+
+  - id: test-spec-writer
+    lane: main
+    kind: writer
+    command: $test-spec-writer
+    requires:
+      - PRD: approved
+      - API_CONTRACT: approved
+      - HLD: approved
+      - LLD: approved
+      - TEST_STRATEGY: approved
+      - GUARDRAILS: optional
+    produces: TEST_SPEC
+    next: [test-reviewer]
+
+  - id: test-reviewer
+    lane: main
+    kind: reviewer
+    command: $test-reviewer
+    requires:
+      - TEST_SPEC: exists
+      - TEST_STRATEGY: preferred
+    approves: TEST_SPEC
+    next: [runbook-writer, case-writing]
+
+  - id: runbook-writer
+    lane: main
+    kind: writer
+    command: $runbook-writer
+    requires:
+      - HLD: approved
+      - LLD: preferred
+      - TEST_SPEC: preferred
+      - GUARDRAILS: optional
+    produces: RUNBOOK
+    next: []
+
+  - id: case-writing
+    lane: automation
+    plugin: gainfactor-pm-bot
+    kind: writer
+    command: $case-writing
+    requires:
+      - TEST_SPEC: approved
+    show_when:
+      - explicit_gainfactor_pm_automation
+      - gainfactor_pm_automation_handoff_ready
+      - gainfactor_pm_automation_handoff_partial
+    produces: GAINFACTOR_PM_PLATFORM_CASE_PACKAGE
+    next: [case]
+
+  - id: case
+    lane: automation
+    plugin: gainfactor-pm-bot
+    kind: operator
+    command: $case
+    requires:
+      - TEST_SPEC: preferred
+    show_when:
+      - gainfactor_pm_platform_case_packages_ready
+    produces: GAINFACTOR_PM_REGISTERED_CASE
+    next: [pipeline]
+
+  - id: pipeline
+    lane: automation
+    plugin: gainfactor-pm-bot
+    kind: operator
+    command: $pipeline
+    requires:
+      - TEST_SPEC: preferred
+    show_when:
+      - gainfactor_pm_registered_cases_ready
+    produces: GAINFACTOR_PM_PIPELINE
+    next: [trigger]
+
+  - id: trigger
+    lane: automation
+    plugin: gainfactor-pm-bot
+    kind: operator
+    command: $trigger
+    requires: []
+    show_when:
+      - gainfactor_pm_pipeline_ready
+    produces: GAINFACTOR_PM_TRIGGER
+    next: [execution]
+
+  - id: execution
+    lane: automation
+    plugin: gainfactor-pm-bot
+    kind: operator
+    command: $execution
+    requires: []
+    show_when:
+      - gainfactor_pm_execution_exists
+    produces: GAINFACTOR_PM_EXECUTION
+    next: []
+
+  - id: guardrails-writer
+    lane: guardrails
+    kind: writer
+    command: $guardrails-writer
+    requires: []
+    produces: GUARDRAILS
+    show_when:
+      - new_project_without_guardrails
+      - architecture_or_platform_change
+      - compliance_change
+      - repeated_review_findings
+      - incident_postmortem
+    next: [guardrails-reviewer]
+
+  - id: guardrails-reviewer
+    lane: guardrails
+    kind: reviewer
+    command: $guardrails-reviewer
+    requires:
+      - GUARDRAILS: exists
+    approves: GUARDRAILS
+    next: []

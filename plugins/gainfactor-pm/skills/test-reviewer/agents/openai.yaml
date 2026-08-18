@@ -1,0 +1,6 @@
+interface:
+  display_name: "Test Reviewer"
+  short_description: "Review test packages, evidence, and release test gates"
+  icon_small: "./assets/gainfactor-pm-logo-small.png"
+  icon_large: "./assets/gainfactor-pm-logo.png"
+  default_prompt: "Use $test-reviewer to review this test package for coverage, evidence, and release test readiness."

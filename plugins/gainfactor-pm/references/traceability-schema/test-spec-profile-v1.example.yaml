@@ -1,0 +1,78 @@
+schema:
+  name: gainfactor-pm-traceability
+  version: "1.0.0"
+  profile: test-spec-profile-v1
+
+artifact:
+  id: TSPEC-CHECKOUT-001
+  type: TEST_SPEC
+  title: 优惠券结算测试包
+  status: draft
+  owners:
+    - qa.checkout
+  created_at: 2026-03-08
+  updated_at: 2026-03-08
+  source_documents:
+    - PRD-CHECKOUT-001
+    - TSTRAT-CHECKOUT-001
+    - LLD-CHECKOUT-001
+
+entities:
+  requirements: []
+  risks: []
+  must_not_regress: []
+  external_behaviors: []
+  decisions: []
+  flows: []
+  test_cases:
+    - id: CASE-CHECKOUT-001
+      title: 有效优惠券成功应用
+      statement: 验证用户在结算页输入有效优惠券后可以成功看到折后金额并完成下单。
+      status: proposed
+      scope: in
+      layer: e2e
+      priority: P0
+      automation: must
+      source_refs:
+        - artifact_id: PRD-CHECKOUT-001
+          section: 3.1
+    - id: CASE-CHECKOUT-002
+      title: 无效优惠券错误反馈
+      statement: 验证用户输入无效优惠券时，页面给出明确错误提示且订单金额保持不变。
+      status: proposed
+      scope: in
+      layer: regression
+      priority: P0
+      automation: should
+      source_refs:
+        - artifact_id: PRD-CHECKOUT-001
+          section: 3.2
+
+relations:
+  - id: REL-TSPEC-001
+    type: verifies
+    from: CASE-CHECKOUT-001
+    to: REQ-CHECKOUT-001
+    status: active
+  - id: REL-TSPEC-002
+    type: verifies
+    from: CASE-CHECKOUT-001
+    to: RISK-CHECKOUT-001
+    status: active
+  - id: REL-TSPEC-003
+    type: verifies
+    from: CASE-CHECKOUT-001
+    to: BEH-CHECKOUT-001
+    status: active
+  - id: REL-TSPEC-004
+    type: verifies
+    from: CASE-CHECKOUT-002
+    to: REQ-CHECKOUT-002
+    status: active
+  - id: REL-TSPEC-005
+    type: verifies
+    from: CASE-CHECKOUT-002
+    to: MR-CHECKOUT-001
+    status: active
+
+waivers: []

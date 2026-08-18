@@ -1,0 +1,111 @@
+schema:
+  name: gainfactor-pm-traceability
+  version: "1.0.0"
+  profile: prd-profile-v1
+
+artifact:
+  id: PRD-CHECKOUT-001
+  type: PRD
+  title: 优惠券结算能力
+  status: draft
+  owners:
+    - product.checkout
+    - engineering.checkout
+  created_at: 2026-03-08
+  updated_at: 2026-03-08
+  source_documents:
+    - BRD-CHECKOUT-001
+    - JOURNEY-CHECKOUT-001
+
+entities:
+  requirements:
+    - id: REQ-CHECKOUT-001
+      class: functional
+      title: 支持在结算页应用优惠券
+      statement: 系统必须允许已登录用户在结算页输入有效优惠券并将折扣应用到当前订单。
+      priority: P0
+      status: proposed
+      scope: in
+      acceptance_criteria:
+        - 用户输入有效优惠券后，订单总价必须立即展示折后金额。
+        - 用户提交订单时，最终成交价必须与已展示折后金额一致。
+      dependencies:
+        - 订单服务支持折扣金额入单
+        - 营销服务提供优惠券校验接口
+      source_refs:
+        - artifact_id: BRD-CHECKOUT-001
+          section: 3.1
+          note: 优惠券作为提升转化率的核心能力
+        - artifact_id: JOURNEY-CHECKOUT-001
+          section: 2.4
+          note: 用户在支付前输入优惠券
+
+    - id: REQ-CHECKOUT-002
+      class: functional
+      title: 无效优惠券给出明确反馈
+      statement: 系统必须在用户输入无效、过期或不适用的优惠券时给出明确错误反馈，且不得影响原始订单金额。
+      priority: P0
+      status: proposed
+      scope: in
+      acceptance_criteria:
+        - 无效优惠券必须返回清晰、可理解的错误提示。
+        - 错误提示出现后，订单金额必须保持未使用优惠券时的值。
+      source_refs:
+        - artifact_id: BRD-CHECKOUT-001
+          section: 3.2
+        - artifact_id: JOURNEY-CHECKOUT-001
+          section: 2.5
+
+    - id: REQ-CHECKOUT-003
+      class: non_functional
+      title: 优惠券校验响应时间
+      statement: 在正常业务负载下，优惠券校验接口的 P95 响应时间必须小于 800ms。
+      priority: P1
+      status: proposed
+      scope: in
+      acceptance_criteria:
+        - 在发布前测试环境中，P95 响应时间小于 800ms。
+        - 超时或失败时，前端必须可感知并得到明确反馈。
+      source_refs:
+        - artifact_id: BRD-CHECKOUT-001
+          section: 5.1
+
+  risks: []
+  must_not_regress: []
+  external_behaviors: []
+  decisions: []
+  flows: []
+  test_cases: []
+
+relations:
+  - id: REL-CHECKOUT-001
+    type: derived_from
+    from: REQ-CHECKOUT-001
+    to: BRD-CHECKOUT-001
+    status: active
+
+  - id: REL-CHECKOUT-002
+    type: derived_from
+    from: REQ-CHECKOUT-001
+    to: JOURNEY-CHECKOUT-001
+    status: active
+
+  - id: REL-CHECKOUT-003
+    type: derived_from
+    from: REQ-CHECKOUT-002
+    to: BRD-CHECKOUT-001
+    status: active
+
+  - id: REL-CHECKOUT-004
+    type: derived_from
+    from: REQ-CHECKOUT-002
+    to: JOURNEY-CHECKOUT-001
+    status: active
+
+  - id: REL-CHECKOUT-005
+    type: derived_from
+    from: REQ-CHECKOUT-003
+    to: BRD-CHECKOUT-001
+    status: active
+
+waivers: []

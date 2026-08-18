@@ -1,0 +1,6 @@
+interface:
+  display_name: "Guide"
+  short_description: "Scan project docs and recommend the next workflow skill"
+  icon_small: "./assets/gainfactor-pm-logo-small.png"
+  icon_large: "./assets/gainfactor-pm-logo.png"
+  default_prompt: "Use $guide to scan this project, identify the current stage, and recommend the next most appropriate skill or downstream automation workflow."

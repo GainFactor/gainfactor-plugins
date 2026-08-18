@@ -1,0 +1,71 @@
+schema:
+  name: gainfactor-pm-traceability
+  version: "1.0.0"
+  profile: journey-profile-v1
+
+artifact:
+  id: JOURNEY-CHECKOUT-001
+  type: USER_JOURNEY
+  title: Checkout User Journeys
+  status: approved
+  owners:
+    - product.checkout
+    - design.checkout
+  created_at: 2026-03-08
+  updated_at: 2026-03-08
+  source_documents:
+    - BRD-CHECKOUT-001
+
+entities:
+  requirements: []
+  risks: []
+  must_not_regress: []
+  external_behaviors: []
+  decisions: []
+  flows:
+    - id: FLOW-CHECKOUT-001
+      title: Apply coupon before payment
+      statement: 已登录用户在结算页输入优惠券，系统展示折后金额，并允许继续支付。
+      status: approved
+      scope: in
+      kind: user_journey
+      priority: P0
+      source_refs:
+        - artifact_id: BRD-CHECKOUT-001
+          section: 3.1
+          note: 优惠券是提升转化率的关键路径
+
+    - id: FLOW-CHECKOUT-002
+      title: Login and return to checkout
+      statement: 未登录用户在登录完成后返回结算页，继续刚才的下单流程。
+      status: approved
+      scope: in
+      kind: user_journey
+      priority: P1
+      source_refs:
+        - artifact_id: BRD-CHECKOUT-001
+          section: 3.2
+          note: 登录不是最终目标，但会影响结算主流程
+
+  test_cases: []
+
+relations:
+  - id: REL-JOURNEY-001
+    type: derived_from
+    from: FLOW-CHECKOUT-001
+    to: BRD-CHECKOUT-001
+    status: active
+
+  - id: REL-JOURNEY-002
+    type: derived_from
+    from: FLOW-CHECKOUT-002
+    to: BRD-CHECKOUT-001
+    status: active
+
+  - id: REL-JOURNEY-003
+    type: depends_on
+    from: FLOW-CHECKOUT-001
+    to: FLOW-CHECKOUT-002
+    status: active
+
+waivers: []

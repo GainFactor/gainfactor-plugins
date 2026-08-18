@@ -1,0 +1,84 @@
+schema:
+  name: gainfactor-pm-traceability
+  version: "1.0.0"
+  profile: lld-profile-v1
+
+artifact:
+  id: LLD-CHECKOUT-001
+  type: LLD
+  title: 优惠券结算模块详细设计
+  status: draft
+  owners:
+    - engineering.checkout
+  created_at: 2026-03-10
+  updated_at: 2026-03-10
+  source_documents:
+    - PRD-CHECKOUT-001
+    - HLD-CHECKOUT-001
+    - API-CHECKOUT-001
+  notes: |
+    LLD Manifest 模块选择：
+    - Core: coupon-validation, discount-calculation, order-integration
+    - Add-on: audit-logging
+    - Excluded: real-time-notification（P2，本轮不实现）
+
+entities:
+  requirements: []
+  risks: []
+  must_not_regress: []
+  external_behaviors: []
+  decisions:
+    - id: DEC-CHKLLD-001
+      title: 优惠券校验使用 Circuit Breaker 模式
+      statement: 对营销服务 gRPC 调用增加熔断器，失败时降级返回"优惠券服务暂不可用"。
+      status: proposed
+      scope: in
+      decision: 使用 Resilience4j Circuit Breaker，阈值 50% 失败率 / 10s 窗口
+      rationale: 营销服务偶发超时可能阻塞结算主流程，熔断器确保降级可用。
+      source_refs:
+        - artifact_id: HLD-CHECKOUT-001
+          section: "4.2"
+          note: DEC-CHECKOUT-001 选择 gRPC 接口后的稳定性补充
+  flows:
+    - id: FLOW-CHKLLD-001
+      title: CouponValidator → MarketingService 交互流
+      statement: CouponValidator 组件调用 MarketingService gRPC stub，处理成功/失败/熔断三种响应路径。
+      status: proposed
+      scope: in
+      kind: module_interaction
+      source_refs:
+        - artifact_id: HLD-CHECKOUT-001
+          section: "4.2"
+          note: 细化 FLOW-CHECKOUT-001 中的优惠券校验子流程
+    - id: FLOW-CHKLLD-002
+      title: DiscountCalculator 签名流
+      statement: DiscountCalculator 计算折扣金额后调用 SignatureService 生成 HMAC 签名，返回签名金额对。
+      status: proposed
+      scope: in
+      kind: module_interaction
+      source_refs:
+        - artifact_id: HLD-CHECKOUT-001
+          section: "4.3"
+          note: 细化 DEC-CHECKOUT-002 的服务端签名实现
+  test_cases: []
+
+relations:
+  - id: REL-LLD-001
+    type: refines
+    from: DEC-CHKLLD-001
+    to: DEC-CHECKOUT-001
+    status: active
+    note: 模块级熔断策略细化架构级 gRPC 选型
+  - id: REL-LLD-002
+    type: refines
+    from: FLOW-CHKLLD-001
+    to: FLOW-CHECKOUT-001
+    status: active
+  - id: REL-LLD-003
+    type: refines
+    from: FLOW-CHKLLD-002
+    to: DEC-CHECKOUT-002
+    status: active
+    note: 签名流细化服务端签名决策
+
+waivers: []

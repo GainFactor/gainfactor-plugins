@@ -1,0 +1,77 @@
+schema:
+  name: gainfactor-pm-traceability
+  version: "1.0.0"
+  profile: test-strategy-profile-v1
+
+artifact:
+  id: TSTRAT-CHECKOUT-001
+  type: TEST_STRATEGY
+  title: 优惠券结算测试策略
+  status: draft
+  owners:
+    - qa.checkout
+  created_at: 2026-03-08
+  updated_at: 2026-03-08
+  source_documents:
+    - PRD-CHECKOUT-001
+    - API-CHECKOUT-001
+    - HLD-CHECKOUT-001
+
+entities:
+  requirements: []
+  risks:
+    - id: RISK-CHECKOUT-001
+      title: 折扣展示金额与实际入单金额不一致
+      statement: 结算页展示金额与订单最终成交金额可能不一致，导致用户投诉或财务对账异常。
+      status: proposed
+      scope: in
+      level: high
+      likelihood: medium
+      impact: 高影响收入与用户信任
+      source_refs:
+        - artifact_id: PRD-CHECKOUT-001
+          section: 2.3
+  must_not_regress:
+    - id: MR-CHECKOUT-001
+      title: 原价下单主流程不可退化
+      statement: 用户不使用优惠券时的原价下单流程必须保持既有成功率与行为一致性。
+      status: proposed
+      scope: in
+      priority: P0
+      source_refs:
+        - artifact_id: PRD-CHECKOUT-001
+          section: 3.2
+  external_behaviors:
+    - id: BEH-CHECKOUT-001
+      title: 结算页展示折后金额
+      statement: 用户输入有效优惠券后，结算页必须展示折后金额。
+      status: proposed
+      scope: in
+      actor: user
+      trigger: 输入有效优惠券
+      observable_outcome: 页面金额发生变化
+      source_refs:
+        - artifact_id: PRD-CHECKOUT-001
+          section: 3.1
+  decisions: []
+  flows: []
+  test_cases: []
+
+relations:
+  - id: REL-TSTRAT-001
+    type: derived_from
+    from: RISK-CHECKOUT-001
+    to: REQ-CHECKOUT-001
+    status: active
+  - id: REL-TSTRAT-002
+    type: derived_from
+    from: MR-CHECKOUT-001
+    to: REQ-CHECKOUT-002
+    status: active
+  - id: REL-TSTRAT-003
+    type: derived_from
+    from: BEH-CHECKOUT-001
+    to: REQ-CHECKOUT-001
+    status: active
+
+waivers: []

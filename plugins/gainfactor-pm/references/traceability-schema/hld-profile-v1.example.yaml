@@ -1,0 +1,83 @@
+schema:
+  name: gainfactor-pm-traceability
+  version: "1.0.0"
+  profile: hld-profile-v1
+
+artifact:
+  id: HLD-CHECKOUT-001
+  type: HLD
+  title: 优惠券结算技术设计
+  status: draft
+  owners:
+    - engineering.checkout
+  created_at: 2026-03-08
+  updated_at: 2026-03-08
+  source_documents:
+    - PRD-CHECKOUT-001
+    - API-CHECKOUT-001
+
+entities:
+  requirements: []
+  risks: []
+  must_not_regress: []
+  external_behaviors: []
+  decisions:
+    - id: DEC-CHECKOUT-001
+      title: 优惠券校验使用营销服务 gRPC 接口
+      statement: 结算页优惠券校验选择调用营销服务内部 gRPC 接口，而非新建 HTTP 网关。
+      status: proposed
+      scope: in
+      decision: 使用营销服务内部 gRPC 接口
+      rationale: 营销服务已有成熟的优惠券校验能力，gRPC 延迟低于 HTTP 网关，且团队已有 gRPC 基础设施。
+      source_refs:
+        - artifact_id: PRD-CHECKOUT-001
+          section: "3.1"
+          note: REQ-CHECKOUT-001 要求的优惠券校验能力
+    - id: DEC-CHECKOUT-002
+      title: 折扣金额由服务端计算并签名
+      statement: 折扣金额必须由服务端计算并签名，前端不参与金额计算。
+      status: proposed
+      scope: in
+      decision: 服务端计算折扣并签名
+      rationale: 防止前端篡改折扣金额，确保展示金额与入单金额一致。
+      source_refs:
+        - artifact_id: PRD-CHECKOUT-001
+          section: "3.1"
+          note: REQ-CHECKOUT-002 安全约束
+  flows:
+    - id: FLOW-CHECKOUT-001
+      title: 优惠券应用主流程
+      statement: 用户在结算页输入优惠券码，系统调用营销服务校验后展示折后金额，提交订单时使用签名金额入单。
+      status: proposed
+      scope: in
+      kind: system_flow
+      source_refs:
+        - artifact_id: PRD-CHECKOUT-001
+          section: "3.1"
+          note: 结算流程中优惠券子流程
+  test_cases: []
+
+relations:
+  - id: REL-HLD-001
+    type: refines
+    from: DEC-CHECKOUT-001
+    to: REQ-CHECKOUT-001
+    status: active
+  - id: REL-HLD-002
+    type: refines
+    from: DEC-CHECKOUT-002
+    to: REQ-CHECKOUT-001
+    status: active
+  - id: REL-HLD-003
+    type: refines
+    from: DEC-CHECKOUT-002
+    to: REQ-CHECKOUT-002
+    status: active
+    note: 签名机制确保无效场景下金额不变
+  - id: REL-HLD-004
+    type: refines
+    from: FLOW-CHECKOUT-001
+    to: REQ-CHECKOUT-001
+    status: active
+
+waivers: []

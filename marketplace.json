@@ -1,0 +1,20 @@
+{
+  "name": "gainfactor-pm-local",
+  "interface": {
+    "displayName": "GainFactor-PM Local"
+  },
+  "plugins": [
+    {
+      "name": "gainfactor-pm",
+      "source": {
+        "source": "local",
+        "path": "./plugins/gainfactor-pm"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+interface:
+  display_name: "LLD Reviewer"
+  short_description: "Review low-level designs for drift and risks"
+  icon_small: "./assets/gainfactor-pm-logo-small.png"
+  icon_large: "./assets/gainfactor-pm-logo.png"
+  default_prompt: "Use $lld-reviewer to review this LLD for drift, gaps, and implementation risk."
