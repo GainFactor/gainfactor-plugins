@@ -88,11 +88,11 @@ body {
   font-weight: 550;
 }
 
-#nd-sidebar a[href='/docs/gainfactor-education-system-v1']:not([data-active='true']):hover {
+#nd-sidebar a[href='/docs/prd']:not([data-active='true']):hover {
   background: var(--color-fd-muted);
 }
 
-#nd-sidebar a[href='/docs/gainfactor-education-system-v1'][data-active='true'] {
+#nd-sidebar a[href='/docs/prd'][data-active='true'] {
   display: grid;
   gap: 0.18rem;
   border-radius: 0.65rem;
@@ -101,12 +101,30 @@ body {
   box-shadow: inset 0 0 0 1px color-mix(in srgb, #000000 12%, transparent);
 }
 
-#nd-sidebar a[href='/docs/gainfactor-education-system-v1'][data-active='true']::after {
-  color: color-mix(in srgb, #ffffff 78%, transparent);
-  content: '已评审 · V1.0';
-  font-size: 0.75rem;
-  font-weight: 400;
-}
+.review-rail { position: sticky; top: 6rem; display: grid; width: 15rem; max-height: calc(100dvh - 8rem); align-self: start; gap: 1.25rem; overflow-y: auto; color: var(--color-fd-foreground); scrollbar-width: thin; }
+.review-section { min-height: 0; }
+.review-section + .review-section { border-top: 1px solid var(--color-fd-border); padding-top: 1rem; }
+.review-section h2 { display: flex; align-items: center; gap: 0.4rem; margin: 0 0 0.65rem; color: var(--color-fd-foreground); font-size: 0.78rem; font-weight: 620; }
+.review-section h2 svg { width: 0.85rem; height: 0.85rem; color: var(--color-fd-muted-foreground); }
+.review-section h2 span { margin-left: auto; min-width: 1.2rem; border-radius: 999px; padding: 0.05rem 0.3rem; background: var(--color-fd-muted); color: var(--color-fd-muted-foreground); text-align: center; font-size: 0.65rem; }
+.review-toc, .review-issues { scrollbar-width: thin; }
+.review-toc { display: grid; border-left: 1px solid var(--color-fd-border); }
+.review-toc a { position: relative; padding: 0.3rem 0.5rem 0.3rem 0.8rem; color: var(--color-fd-muted-foreground); font-size: 0.78rem; line-height: 1.4; }
+.review-toc a[data-depth='3'] { padding-left: 1.5rem; font-size: 0.75rem; }
+.review-toc a:hover { color: var(--color-fd-foreground); }
+.review-toc a[data-active='true'] { color: var(--color-fd-foreground); font-weight: 620; }
+.review-toc a[data-active='true']::before { position: absolute; inset-block: 0.25rem; left: -1px; width: 2px; border-radius: 999px; background: var(--color-fd-foreground); content: ''; }
+.review-conclusion { margin: 0 0 0.65rem; color: var(--color-fd-foreground); font-size: 0.78rem; font-weight: 600; }
+.review-empty { margin: 0; color: var(--color-fd-muted-foreground); font-size: 0.75rem; line-height: 1.55; }
+.review-issues ol { display: grid; gap: 0.4rem; margin: 0; padding: 0; list-style: none; }
+.review-issues li a { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0.25rem 0.45rem; border-radius: 0.45rem; padding: 0.55rem; }
+.review-issues li a:hover { background: var(--color-fd-muted); }
+.review-issues strong { font-size: 0.76rem; line-height: 1.45; font-weight: 580; }
+.review-issues small { grid-column: 2; color: var(--color-fd-muted-foreground); font-size: 0.7rem; line-height: 1.45; }
+.review-severity { align-self: start; border: 1px solid var(--color-fd-border); border-radius: 0.25rem; padding: 0.05rem 0.25rem; font-size: 0.62rem; font-weight: 700; }
+.review-severity-p0 { border-color: #dc2626; color: #b91c1c; }
+.review-severity-p1 { border-color: var(--gf-brand); color: var(--gf-brand); }
+.review-severity-p2 { color: var(--color-fd-muted-foreground); }
 
 @media (min-width: 1280px) {
   #nd-toc > div > div {
@@ -251,9 +269,10 @@ body > div[id^='dmermaid-'], body > svg[id^='mermaid-'] { display: none !importa
 html > body[data-scroll-locked] { margin-right: 0 !important; --removed-body-scroll-bar-size: 0px !important; }
 
 .prd-review-layout { display: grid; grid-template-columns: 13rem minmax(0, 1fr) 22rem; width: 100%; max-width: 124rem; margin-inline: auto; gap: 1.5rem; padding: 1.5rem; }
-.prd-document { min-width: 0; grid-column: 2; }
+.prd-document { min-width: 0; }
 .review-navigation, .review-issues-panel { position: sticky; top: 5.5rem; max-height: calc(100dvh - 7rem); align-self: start; overflow-y: auto; scrollbar-width: thin; }
 .review-navigation { grid-column: 1; }
+.prd-document { grid-column: 2; }
 .review-issues-panel { grid-column: 3; border: 1px solid var(--color-fd-border); border-radius: 0.7rem; padding: 1rem; background: var(--color-fd-card); }
 .review-navigation h2, .review-issues-panel h2 { display: flex; align-items: center; gap: 0.4rem; margin: 0 0 0.7rem; color: var(--color-fd-foreground); font-size: 0.8rem; font-weight: 650; }
 .review-navigation h2 svg, .review-issues-panel h2 svg { width: 0.9rem; height: 0.9rem; color: var(--color-fd-muted-foreground); }
@@ -267,29 +286,11 @@ html > body[data-scroll-locked] { margin-right: 0 !important; --removed-body-scr
 .review-location { font-weight: 550; }
 .prose :where(h2, h3, h4)[data-review-focus='true'] { border-radius: 0.45rem; outline: 2px solid color-mix(in srgb, var(--gf-brand) 58%, transparent); outline-offset: 0.55rem; background: color-mix(in srgb, var(--gf-brand) 8%, transparent); }
 
-@media (max-width: 1535px) { .prd-review-layout { grid-template-columns: 11rem minmax(0, 1fr) 20rem; gap: 1rem; padding-inline: 1rem; } }
-@media (max-width: 1279px) { .prd-review-layout { display: block; max-width: 64rem; } .review-navigation, .review-issues-panel { display: none; } }
+@media (max-width: 1535px) {
+  .prd-review-layout { grid-template-columns: 11rem minmax(0, 1fr) 20rem; gap: 1rem; padding-inline: 1rem; }
+}
 
-.review-rail { position: sticky; top: 6rem; display: grid; width: 15rem; max-height: calc(100dvh - 8rem); align-self: start; gap: 1.25rem; overflow-y: auto; color: var(--color-fd-foreground); scrollbar-width: thin; }
-.review-section { min-height: 0; }
-.review-section + .review-section { border-top: 1px solid var(--color-fd-border); padding-top: 1rem; }
-.review-section h2 { display: flex; align-items: center; gap: 0.4rem; margin: 0 0 0.65rem; color: var(--color-fd-foreground); font-size: 0.78rem; font-weight: 620; }
-.review-section h2 svg { width: 0.85rem; height: 0.85rem; color: var(--color-fd-muted-foreground); }
-.review-section h2 span { margin-left: auto; min-width: 1.2rem; border-radius: 999px; padding: 0.05rem 0.3rem; background: var(--color-fd-muted); color: var(--color-fd-muted-foreground); text-align: center; font-size: 0.65rem; }
-.review-toc, .review-issues { scrollbar-width: thin; }
-.review-toc { display: grid; border-left: 1px solid var(--color-fd-border); }
-.review-toc a { position: relative; padding: 0.3rem 0.5rem 0.3rem 0.8rem; color: var(--color-fd-muted-foreground); font-size: 0.78rem; line-height: 1.4; }
-.review-toc a[data-depth='3'] { padding-left: 1.5rem; font-size: 0.75rem; }
-.review-toc a:hover, .review-toc a[data-active='true'] { color: var(--color-fd-foreground); }
-.review-toc a[data-active='true'] { font-weight: 620; }
-.review-toc a[data-active='true']::before { position: absolute; inset-block: 0.25rem; left: -1px; width: 2px; border-radius: 999px; background: var(--color-fd-foreground); content: ''; }
-.review-conclusion { margin: 0 0 0.65rem; font-size: 0.78rem; font-weight: 600; }
-.review-issues ol { display: grid; gap: 0.4rem; margin: 0; padding: 0; list-style: none; }
-.review-issues li a { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0.25rem 0.45rem; border-radius: 0.45rem; padding: 0.55rem; }
-.review-issues li a:hover { background: var(--color-fd-muted); }
-.review-issues strong { font-size: 0.76rem; line-height: 1.45; font-weight: 580; }
-.review-issues small { grid-column: 2; color: var(--color-fd-muted-foreground); font-size: 0.7rem; line-height: 1.45; }
-.review-severity { align-self: start; border: 1px solid var(--color-fd-border); border-radius: 0.25rem; padding: 0.05rem 0.25rem; font-size: 0.62rem; font-weight: 700; }
-.review-severity-p0 { border-color: #dc2626; color: #b91c1c; }
-.review-severity-p1 { border-color: var(--gf-brand); color: var(--gf-brand); }
-.review-severity-p2 { color: var(--color-fd-muted-foreground); }
+@media (max-width: 1279px) {
+  .prd-review-layout { display: block; max-width: 64rem; }
+  .review-navigation, .review-issues-panel { display: none; }
+}
