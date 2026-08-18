@@ -19,12 +19,20 @@ description: 'Guide, workflow guide, 流程导航、我该用哪个 skill、下�
 
 - **Guide 是导航器，不是产出器**：不直接撰写 BRD/PRD/HLD/LLD/Test/Runbook，也不替代 reviewer 做准出判断。
 - **Guide 只做状态识别与路由建议**：扫描仓库、读取元数据、判断阶段、推荐下一步。
-- **Guide 服务于 `gainfactor-pm` 主流程**，并补充三个特殊分支：
+- **Guide 服务于 `gainfactor-pm` 主流程**，并补充四个特殊分支：
+  - **可选分支**：产品探索与上下文
   - **可选分支**：Prototype
   - **可选分支**：GainFactor-PM Automation Landing
   - **横切分支**：Guardrails
 
 ## 主流程边界
+
+### 可选分支：产品探索与上下文
+
+- `$define-product` 用于产品本身仍不清晰、或用户画像/竞品分析/市场研究等任务需要稳定产品上下文时
+- 产物 `PRODUCT_DEFINITION` 可被多个下游任务复用，但不是 BRD 和主流程的强制门禁
+- 已有清晰产品定义、内部效率需求或用户只需要执行明确下游任务时，不要强制推荐
+- 若既有产品定义与新证据冲突，应提示确认，不静默改写
 
 ### 主流程（按默认顺序）
 
@@ -32,6 +40,7 @@ description: 'Guide, workflow guide, 流程导航、我该用哪个 skill、下�
 
 对应 skill：
 
+- `$define-product`（可选产品探索）
 - `$brd-interviewer`
 - `$uc-interviewer`
 - `$prd-writer`
@@ -146,7 +155,7 @@ description: 'Guide, workflow guide, 流程导航、我该用哪个 skill、下�
 
 - 任何推荐、回答“某个阶段/产物对应哪个 skill”时，**只能**使用 `workflow-map.yaml` 中已有的 `nodes[].command`
 - 如果 `artifact_routes` 里存在该 artifact 的显式映射，优先使用该映射
-- `workflow-map.yaml` 使用 Codex 的 `$skill-name` 作为 canonical 表示；向用户输出前，必须按宿主兼容规则转换
+- `workflow-map.yaml` 使用 Codex 的 `$skill-name` 作为 canonical 表示；向用户输出时保持该格式
 - **禁止**把 artifact 名、阶段名、文档标题、自然语言描述改写成新的 skill ID
 - **禁止**输出仓库中不存在的 skill 别名，即使它看起来更“自然”
 
@@ -379,7 +388,7 @@ Guardrails 建议只在以下场景出现：
 调用方式输出要求：
 
 - 从 canonical invocation 提取并保持准确的 skill ID
-- 按宿主兼容规则渲染：Codex 使用 `$skill-name`，Claude Code 使用 namespaced slash command
+- 使用 Codex `$skill-name` 格式
 - 不要输出别名、中文 skill 名或自然语言阶段名
 - 若是回答“这个阶段对应哪个 skill”，先给调用方式，再可补一句功能解释
 

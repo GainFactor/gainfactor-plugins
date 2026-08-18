@@ -188,13 +188,14 @@ description: 'PRD review, 需求评审, 检查 PRD 质量。Use when: PRD 完成
 
 仅在用户要求打开、预览或生成 PRD 阅读/评审页面时执行。可视化页面是阅读载体，不能替代阶段三的审查报告，也不能修改原 PRD。
 
-1. 从当前 `SKILL.md` 位置解析 `prd-reviewer` skill 根目录。
+1. 从当前 `SKILL.md` 位置解析 `gainfactor-pm` 插件根目录。
 2. 创建独立临时目录，禁止在用户项目中复制 Mock 文档或覆盖现有前端工程。
 3. 执行：
 
    ```bash
-   python3 <prd-reviewer-skill-root>/scripts/create_review_portal.py \
+   python3 <gainfactor-pm-plugin-root>/scripts/create_document_portal.py \
      <PRD文件路径> <临时目录> \
+     --slug=prd --type=PRD --collection=产品文档 \
      --version=<版本> --status=<状态> --owner=<负责人> --updated=<YYYY-MM-DD>
    ```
 
@@ -219,8 +220,8 @@ description: 'PRD review, 需求评审, 检查 PRD 质量。Use when: PRD 完成
    `sectionId` 必须对应当前 PRD 中实际存在的标题，以便评审问题能够跳转到原文；`sectionTitle` 应填写该标题的可读文本，用于在评审卡上提前说明定位位置。没有问题时传空数组，不得写入模板资产。
 
 4. 在临时目录安装锁定依赖并启动本地预览；向用户提供本地 URL。
-5. 页面内容只能来自本轮用户指定的 PRD。`assets/prd-review-portal/` 仅包含布局、组件、样式和通用空状态，禁止向其中加入示例业务正文。
-6. PRD 更新后重新运行导入脚本；不要手工维护生成的 `content/docs/prd.mdx`。
+5. 页面内容只能来自本轮用户指定的 PRD。公共模板 `../../assets/document-review-portal/` 仅包含布局、组件、样式和通用空状态，禁止向其中加入示例业务正文。
+6. PRD 更新后使用相同 slug 重新运行生成器；不要手工维护生成的 `content/docs/<slug>.mdx`。
 
 如果用户只要求文本审查，不创建或启动可视化页面。
 

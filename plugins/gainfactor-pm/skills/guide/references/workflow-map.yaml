@@ -1,5 +1,6 @@
 version: 1
 notes:
+  - "Product Definition is an optional reusable context baseline, not a mandatory mainline gate."
   - "Guardrails is cross-cutting, not a default mainline gate."
   - "Prototype is optional and only shown when repo or user intent justifies it."
   - "GainFactor-PM automation landing is optional and only shown when user intent or an approved Test Spec handoff justifies it."
@@ -39,6 +40,8 @@ scan:
     - filename_or_title_heuristic
 
 lanes:
+  - id: discovery
+    title: 可选产品探索与上下文
   - id: main
     title: 主流程
   - id: prototype
@@ -49,6 +52,9 @@ lanes:
     title: 横切 Guardrails 分支
 
 artifacts:
+  - id: PRODUCT_DEFINITION
+    metadata_types: [PRODUCT_DEFINITION]
+    filename_keywords: [product-definition, product_definition, 产品定义]
   - id: BRD
     filename_keywords: [brd]
   - id: USER_JOURNEY
@@ -78,6 +84,9 @@ artifacts:
     filename_keywords: [guardrails, engineering-standards, engineering_standards]
 
 artifact_routes:
+  - artifact: PRODUCT_DEFINITION
+    creation_node: define-product
+    creation_command: $define-product
   - artifact: BRD
     creation_node: brd-interviewer
     creation_command: $brd-interviewer
@@ -130,10 +139,24 @@ artifact_routes:
     review_command: $guardrails-reviewer
 
 nodes:
+  - id: define-product
+    lane: discovery
+    kind: interviewer
+    command: $define-product
+    requires: []
+    produces: PRODUCT_DEFINITION
+    show_when:
+      - vague_external_user_product
+      - product_context_required
+      - explicit_product_definition
+    next: [brd-interviewer]
+
   - id: brd-interviewer
     lane: main
     kind: interviewer
     command: $brd-interviewer
+    optional_context:
+      - PRODUCT_DEFINITION: preferred
     produces: BRD
     next: [uc-interviewer]
 

@@ -93,7 +93,7 @@ Orchestrator 基于 `verdict` 做流转判定，不再从报告自由文本中�
 本契约是 gainfactor-pm 内部协议，不依赖任何特定 AI 平台。它的作用范围：
 
 - **是**：orchestrator（SKILL.md 中的主 agent）与 subagent 之间的结果传递协议
-- **不是**：平台原生 agent 文件格式（那属于 `.codex/agents/*.toml`、`.claude/agents/*.md`、`.github/agents/*.agent.md`）
+- **不是**：Codex 平台原生 agent 文件格式（那属于 `.codex/agents/*.toml`）
 - **不是**：skill UI 元数据（那属于 `agents/openai.yaml`）
 
 ## 版本

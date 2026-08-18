@@ -10,6 +10,7 @@ gainfactor-pm 提供一套结构化的研发文档工具，覆盖从业务想法
 - **交互验证阶段（前端仓库可选）**：Prototype 设计/评审
 - **设计阶段**：API 契约撰写/审查 → HLD 撰写/审查 → 测试策略撰写/评审 → LLD 撰写/审查
 - **测试与交付准备阶段**：测试规格/测试包撰写 → 测试门禁评审 → Runbook 撰写 / GainFactor-PM 自动化落地
+- **统一阅读与评审**：将 BRD、PRD、HLD、LLD、测试策略和 Runbook 加入同一个本地文档门户
 
 每个环节都有明确的输入输出和质量门禁，确保文档质量和上下游衔接。对于已经准出的 Test Spec，`gainfactor-pm` 也应把用户自然推到 `gainfactor-pm-bot` 的自动化落地链路，而不是停在文档侧。
 
@@ -17,13 +18,11 @@ gainfactor-pm 提供一套结构化的研发文档工具，覆盖从业务想法
 
 ## 宿主支持
 
-`gainfactor-pm` 同时保留 Codex 与 Claude Code 的插件入口：
+`gainfactor-pm` 当前仅支持 Codex / ChatGPT 桌面端：
 
-- Codex / ChatGPT 桌面端：使用 `.codex-plugin/plugin.json`，通过 `$skill-name` 调用，例如 `$guide`。
-- Claude Code：使用 `.claude-plugin/plugin.json` 与 `commands/`，通过 namespaced slash command 调用，例如 `/gainfactor-pm:guide`。
-- 共享 `skills/` 中的交互提问、subagent 调度和插件内脚本定位遵循 `references/host-compatibility.md`。
-
-下文默认展示 Codex 调用格式；在 Claude Code 中使用对应的 namespaced slash command。
+- 使用 `.codex-plugin/plugin.json` 作为插件入口。
+- 通过 `$skill-name` 调用，例如 `$guide`。
+- `skills/` 中的交互提问、subagent 调度和插件内脚本定位遵循 `references/host-compatibility.md`。
 
 ## 追溯元数据约定
 
@@ -129,6 +128,8 @@ flowchart TD
 | BRD 写完了，要细化用户操作流程 | `$uc-interviewer` | 逐条对齐 user journey |
 | 要写产品需求文档 | `$prd-writer` | 基于 BRD + Journey 撰写 PRD |
 | PRD 写完了，需要独立评审 | `$prd-reviewer` | 多角色视角审查 |
+| 要把 BRD、PRD、HLD 等文档放进同一个阅读站点 | `$document-review-portal` | 创建或持续追加到统一文档阅读与评审门户 |
+| 产品想法尚未定义清楚，或画像/竞品分析缺少产品上下文 | `$define-product` | 形成可复用的产品定义基线 |
 | 有 PRD + User Journey，要在前端仓库先验证交互 | `$prototype-designer` | 生成隔离原型，提前暴露交互、状态和导航问题 |
 | Prototype 做完了，需要作为 API/HLD 前的门禁 | `$prototype-reviewer` | 审查上游对齐、工程隔离和下游输入质量 |
 | PRD 准出了，要定义 API 契约 | `$api-writer` | 输出 OpenAPI/gRPC/Event 等契约 |
@@ -217,6 +218,18 @@ flowchart TD
 
 ## Skills 详情
 
+### define-product
+
+**用途**：通过有终点的六步访谈，明确外部用户产品或现有产品新能力的定位、角色、价值机制、责任边界、冷启动和商业闭环。
+
+它生成独立的 `PRODUCT_DEFINITION` 上下文，可供用户画像、竞品分析、市场分析和 BRD 等任务复用，但不是主流程强制门禁。内部员工效率方案应直接进入 BRD 等适用流程。
+
+```text
+$define-product 我想做一个帮助独立开发者验证产品方向的服务
+```
+
+---
+
 ### brd-interviewer
 
 **用途**：将模糊的业务想法转化为结构化的 BRD（业务需求文档）
@@ -294,6 +307,14 @@ $prd-writer ./docs/BRD-订单系统.md ./docs/User-Journeys.md
 **示例**：
 ```
 $prd-reviewer ./docs/PRD-用户认证.md
+```
+
+### document-review-portal
+
+将一份或多份 Markdown/MDX 文档放入同一个本地阅读与评审门户。左侧会自动形成“产品需求 / 技术设计 / 质量与交付 / 其他文档”一级折叠分组，具体文档作为二级条目。对同一目标目录重复调用时，使用不同 slug 追加文档，使用相同 slug 更新既有文档；模板不会携带演示用正文或 Mock 评审数据。
+
+```text
+$document-review-portal 把 ./docs/BRD.md、./docs/PRD.md 和 ./docs/HLD.md 加入同一个文档门户
 ```
 
 ---
@@ -606,6 +627,8 @@ $runbook-writer ./docs/HLD-用户认证.md ./docs/LLD-用户认证.md ./docs/API
 
 | 上游文档 | Skill | 下游文档 |
 |----------|-------|----------|
+| 模糊的外部用户产品想法 | define-product | Product Definition（可选上下文） |
+| Product Definition | 用户画像 / 竞品分析 / 市场分析 / brd-interviewer | 对应研究或需求产物 |
 | 想法 | brd-interviewer | BRD |
 | BRD | uc-interviewer | User Journey |
 | BRD + Journey | prd-writer | PRD |
@@ -654,13 +677,13 @@ cd "<本仓库根目录>"
 
 ```bash
 codex plugin marketplace add .
-codex plugin add gainfactor-pm@gainfactor-pm-local
+codex plugin add gainfactor-pm@gainfactor-plugins
 ```
 
 如果 Marketplace 已经注册，插件更新后只需重新执行：
 
 ```bash
-codex plugin add gainfactor-pm@gainfactor-pm-local
+codex plugin add gainfactor-pm@gainfactor-plugins
 ```
 
 可使用以下命令检查安装状态：
@@ -670,13 +693,3 @@ codex plugin list
 ```
 
 安装或更新完成后，请新建一个 Codex 任务，使新的 Skills 和插件资源生效。
-
-### Claude Code
-
-从仓库根目录启动 Claude Code，并通过插件目录加载：
-
-```bash
-claude --plugin-dir ./plugins/gainfactor-pm
-```
-
-`--plugin-dir` 仅对当前 Claude Code 会话生效；再次启动时需要重新传入该参数。

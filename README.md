@@ -9,14 +9,16 @@ GainFactor 的 Codex / ChatGPT 插件市场。当前包含 `gainfactor-pm`：一
 1. 选择“添加插件市场”。
 2. 在“来源”中填写本 GitHub 仓库或 Git URL。
 3. “Git 引用”可留空以使用默认分支，或填写指定版本标签。
-4. `marketplace.json` 位于仓库根目录，因此“稀疏路径”留空。
+4. Marketplace 清单位于仓库的 `.agents/plugins/marketplace.json`；添加整个仓库时“稀疏路径”留空。
 5. 添加市场后，安装 `gainfactor-pm`。
 
 ## 仓库结构
 
 ```text
 .
-├── marketplace.json
+├── .agents/
+│   └── plugins/
+│       └── marketplace.json
 └── plugins/
     └── gainfactor-pm/
         ├── .codex-plugin/plugin.json
