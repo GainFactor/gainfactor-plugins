@@ -78,11 +78,13 @@ export default function Layout({ children }: LayoutProps<'/docs'>) {
   return (
     <div className="docs-shell">
       <header className="docs-topbar">
-        <Link href="/docs" className="brand-lockup" aria-label="GainFactor PRD 文档首页">
-          <Image src="/gainfactor-mark.png" alt="" width={28} height={28} priority unoptimized />
-          <span>GainFactor</span>
-        </Link>
-        <span className="docs-product-title">教务系统 V1.0 需求</span>
+        <div className="docs-topbar-inner">
+          <Link href="/docs" className="brand-lockup" aria-label="GainFactor PRD 文档首页">
+            <Image src="/gainfactor-mark.png" alt="" width={28} height={28} priority unoptimized />
+            <span>GainFactor</span>
+          </Link>
+          <span className="docs-product-title">教务系统 V1.0 需求</span>
+        </div>
       </header>
       <DocsLayout
         tree={chapterTree}
