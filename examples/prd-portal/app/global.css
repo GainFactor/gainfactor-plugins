@@ -56,7 +56,8 @@ body {
 .brand-lockup { display: inline-flex; align-items: center; gap: 0.55rem; color: #ff5a00; font-size: 1.05rem; font-weight: 700; letter-spacing: -0.015em; }
 
 .docs-topbar {
-  position: relative;
+  position: sticky;
+  top: 0;
   z-index: 30;
   display: flex;
   height: 4rem;
@@ -75,9 +76,11 @@ body {
   font-weight: 650;
 }
 
-.docs-layout { --fd-docs-height: calc(100dvh - 4rem); }
+.docs-layout {
+  --fd-docs-height: calc(100dvh - 4rem);
+}
 
-#nd-page { max-width: none; }
+#nd-page { max-width: 1000px; }
 #nd-sidebar, #nd-toc, header { background: color-mix(in srgb, var(--color-fd-background) 97%, transparent); }
 #nd-sidebar [data-active='true'], #nd-toc [data-active='true'] { color: var(--color-fd-primary); font-weight: 650; }
 #nd-sidebar [data-active='true'] { box-shadow: inset 3px 0 var(--gf-brand); }
@@ -111,6 +114,7 @@ body {
 
 .prose :where(h2) { margin-top: 2.75rem; border-bottom: 1px solid var(--color-fd-border); padding-bottom: 0.65rem; font-size: 1.62rem; line-height: 1.4; letter-spacing: -0.02em; }
 .prose :where(h3) { margin-top: 2rem; font-size: 1.2rem; line-height: 1.5; }
+.prose :where(h2, h3, h4) { scroll-margin-top: 5rem; }
 .prose :where(p, li) { color: var(--color-fd-foreground); }
 .prose :where(blockquote) { border: 1px solid var(--color-fd-border); border-left: 3px solid var(--color-fd-primary); border-radius: 0.5rem; background: var(--gf-info-subtle); padding: 0.85rem 1rem; color: var(--color-fd-foreground); font-style: normal; }
 .prose :where(table) { display: table; min-width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.94rem; line-height: 1.65; }
