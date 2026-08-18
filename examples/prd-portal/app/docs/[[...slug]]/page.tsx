@@ -22,10 +22,16 @@ export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
   const markdownUrl = getPageMarkdownUrl(page).url;
 
   return (
-    <DocsPage toc={page.data.toc} full={page.data.full}>
-      <DocsTitle>{page.data.title}</DocsTitle>
+    <DocsPage toc={page.data.toc.filter((item) => item.depth <= 3)} full={page.data.full}>
+      <DocsTitle className="prd-title">{page.data.title}</DocsTitle>
       <DocsDescription className="mb-0">{page.data.description}</DocsDescription>
-      <div className="flex flex-row gap-2 items-center border-b pb-6">
+      <dl className="prd-metadata" aria-label="文档信息">
+        <div><dt>版本</dt><dd>V1.0</dd></div>
+        <div><dt>状态</dt><dd>已评审</dd></div>
+        <div><dt>负责人</dt><dd>GainFactor 项目负责人</dd></div>
+        <div><dt>更新</dt><dd>2026-07-19</dd></div>
+      </dl>
+      <div className="page-actions flex flex-row gap-2 items-center border-b pb-6">
         <MarkdownCopyButton markdownUrl={markdownUrl} />
         <ViewOptionsPopover
           markdownUrl={markdownUrl}
