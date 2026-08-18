@@ -92,6 +92,15 @@ body {
   margin-inline: auto;
 }
 
+.docs-layout [data-sidebar-placeholder],
+.docs-layout #nd-toc {
+  top: 4rem;
+}
+
+.docs-layout [data-toc-popover] {
+  top: 4rem;
+}
+
 #nd-page { max-width: 1000px; }
 #nd-sidebar, #nd-toc, header { background: color-mix(in srgb, var(--color-fd-background) 97%, transparent); }
 #nd-sidebar [data-active='true'], #nd-toc [data-active='true'] { color: var(--color-fd-primary); font-weight: 650; }
