@@ -11,6 +11,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@antv/infographic": "0.2.20",
     "@mermaid-js/layout-elk": "^0.2.2",
     "cnfast": "^0.1.0",
     "fumadocs-core": "16.14.4",

@@ -15,10 +15,18 @@ from pathlib import Path
 PLUGIN_ROOT = Path(__file__).resolve().parent.parent
 TEMPLATE_ROOT = PLUGIN_ROOT / "assets" / "document-review-portal"
 MANIFEST_NAME = ".gainfactor-documents.json"
+LAUNCHER_SCRIPT = "portal-control.py"
 GROUPS = {
     "product-requirements": {
         "title": "产品需求",
-        "types": {"PRODUCT-DEFINITION", "BRD", "PRD", "USER-JOURNEY"},
+        "types": {
+            "PRODUCT-DEFINITION",
+            "USER-PERSONA",
+            "COMPETITIVE-ANALYSIS",
+            "BRD",
+            "PRD",
+            "USER-JOURNEY",
+        },
     },
     "technical-design": {"title": "技术设计", "types": {"API", "API-CONTRACT", "HLD", "LLD"}},
     "quality-delivery": {
@@ -93,6 +101,25 @@ def write_portal_data(target: Path, manifest: dict) -> None:
     write_navigation(target, manifest)
 
 
+def install_launchers(target: Path) -> None:
+    scripts_directory = target / "scripts"
+    scripts_directory.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(TEMPLATE_ROOT / "scripts" / LAUNCHER_SCRIPT, scripts_directory / LAUNCHER_SCRIPT)
+    launchers = {
+        "打开文档门户.command": "open",
+        "关闭文档门户.command": "stop",
+    }
+    for filename, action in launchers.items():
+        launcher = target / filename
+        launcher.write_text(
+            "#!/bin/zsh\n"
+            "PORTAL_DIR=\"${0:A:h}\"\n"
+            f'exec python3 "$PORTAL_DIR/scripts/{LAUNCHER_SCRIPT}" {action} "$PORTAL_DIR"\n',
+            encoding="utf-8",
+        )
+        launcher.chmod(0o755)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("document", type=Path, help="Markdown or MDX document")
@@ -106,7 +133,11 @@ def main() -> int:
     parser.add_argument("--owner", default="未指定")
     parser.add_argument("--updated", default=date.today().isoformat())
     parser.add_argument("--review", type=Path, help="Optional structured review JSON")
+    parser.add_argument("--presentation", type=Path, help="Generic Portal Presentation JSON")
+    parser.add_argument("--rich", action="store_true", help="Require a valid presentation manifest")
     args = parser.parse_args()
+    if args.rich and not args.presentation:
+        parser.error("--rich requires --presentation=<portal-presentation.json>")
 
     document = args.document.resolve()
     target = args.target.resolve()
@@ -155,6 +186,22 @@ def main() -> int:
         output_path,
     ]
     subprocess.run(command, cwd=target, check=True)
+    compile_command = [
+            "python3",
+            str(PLUGIN_ROOT / "scripts/compile_portal_document.py"),
+            str(target / output_path),
+        ]
+    if args.presentation:
+        compile_command.append(f"--presentation={args.presentation.resolve()}")
+    if args.rich:
+        compile_command.append("--validate")
+    compiled = subprocess.run(
+        compile_command,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    presentation_payload = json.loads(compiled.stdout)
 
     review = {"conclusion": "尚未生成评审结果", "issues": []}
     if args.review:
@@ -180,9 +227,11 @@ def main() -> int:
         "status": args.status,
         "owner": args.owner,
         "updated": args.updated,
+        "presentation": presentation_payload["presentation"],
         "review": review,
     }
     write_portal_data(target, manifest)
+    install_launchers(target)
     print(f"Added {args.document_type} document at /docs/{route}: {target}")
     return 0
 

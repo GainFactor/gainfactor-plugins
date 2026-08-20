@@ -1,0 +1,6 @@
+interface:
+  display_name: "Document Review"
+  short_description: "Mount completed documents in a shared review portal"
+  icon_small: "./assets/gainfactor-pm-logo-small.png"
+  icon_large: "./assets/gainfactor-pm-logo.png"
+  default_prompt: "Use $document-review to mount these completed documents in a shared reading and review portal."

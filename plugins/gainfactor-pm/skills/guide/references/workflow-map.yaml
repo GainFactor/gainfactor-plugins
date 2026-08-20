@@ -55,6 +55,12 @@ artifacts:
   - id: PRODUCT_DEFINITION
     metadata_types: [PRODUCT_DEFINITION]
     filename_keywords: [product-definition, product_definition, 产品定义]
+  - id: USER_PERSONA
+    metadata_types: [USER_PERSONA]
+    filename_keywords: [user-persona, user_persona, persona, 用户画像]
+  - id: COMPETITIVE_ANALYSIS
+    metadata_types: [COMPETITIVE_ANALYSIS]
+    filename_keywords: [competitive-analysis, competitive_analysis, competitor-analysis, competitor_analysis, 竞品分析]
   - id: BRD
     filename_keywords: [brd]
   - id: USER_JOURNEY
@@ -87,6 +93,12 @@ artifact_routes:
   - artifact: PRODUCT_DEFINITION
     creation_node: define-product
     creation_command: $define-product
+  - artifact: USER_PERSONA
+    creation_node: user-persona
+    creation_command: $user-persona
+  - artifact: COMPETITIVE_ANALYSIS
+    creation_node: competitive-analysis
+    creation_command: $competitive-analysis
   - artifact: BRD
     creation_node: brd-interviewer
     creation_command: $brd-interviewer
@@ -149,7 +161,58 @@ nodes:
       - vague_external_user_product
       - product_context_required
       - explicit_product_definition
-    next: [brd-interviewer]
+    next: [competitive-analysis, brd-interviewer]
+
+  - id: user-persona
+    lane: discovery
+    kind: research
+    command: $user-persona
+    optional_context:
+      - PRODUCT_DEFINITION: preferred
+    produces: USER_PERSONA
+    show_when:
+      - explicit_user_persona
+      - user_segmentation_required
+      - product_decision_needs_user_evidence
+    next: [document-publisher]
+
+  - id: document-publisher
+    lane: delivery
+    kind: publisher
+    command: $document-publisher
+    optional_context:
+      - USER_PERSONA: rich-supported
+    produces: PORTAL_DOCUMENT
+    show_when:
+      - explicit_rich_portal_publish
+      - portal_report_presentation_required
+    next: [document-review]
+
+  - id: document-review
+    lane: delivery
+    kind: publisher
+    command: $document-review
+    requires: [PORTAL_DOCUMENT]
+    produces: DOCUMENT_PORTAL
+    show_when:
+      - explicit_document_preview
+      - shared_review_portal_required
+      - upstream_mandates_portal_delivery
+    next: []
+
+  - id: competitive-analysis
+    lane: discovery
+    kind: research
+    command: $competitive-analysis
+    requires: [PRODUCT_DEFINITION]
+    optional_context:
+      - USER_PERSONA: preferred
+    produces: COMPETITIVE_ANALYSIS
+    show_when:
+      - explicit_competitive_analysis
+      - competitor_research_required
+      - product_decision_needs_competitive_evidence
+    next: []
 
   - id: brd-interviewer
     lane: main

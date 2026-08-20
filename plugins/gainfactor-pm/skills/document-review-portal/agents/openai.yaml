@@ -1,6 +1,0 @@
-interface:
-  display_name: "Document Review Portal"
-  short_description: "Show multiple engineering documents in one review portal"
-  icon_small: "./assets/gainfactor-pm-logo-small.png"
-  icon_large: "./assets/gainfactor-pm-logo.png"
-  default_prompt: "Use $document-review-portal to add these documents to a shared reading and review portal."

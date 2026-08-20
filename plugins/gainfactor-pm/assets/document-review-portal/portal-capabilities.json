@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "contentTools": [
+    { "id": "markdown", "component": null, "origin": "markdown", "status": "registered" },
+    { "id": "code", "component": "CodeBlock", "origin": "fumadocs", "status": "registered" },
+    { "id": "cards", "component": "Cards", "origin": "fumadocs", "status": "registered" },
+    { "id": "callout", "component": "Callout", "origin": "fumadocs", "status": "registered" },
+    { "id": "tabs", "component": "Tabs", "origin": "fumadocs", "status": "registered" },
+    { "id": "steps", "component": "Steps", "origin": "fumadocs", "status": "registered" },
+    { "id": "files", "component": "Files", "origin": "fumadocs", "status": "registered" },
+    { "id": "type-table", "component": "TypeTable", "origin": "fumadocs", "status": "registered" },
+    { "id": "image-zoom", "component": "ImageZoom", "origin": "fumadocs", "status": "registered" },
+    { "id": "lucide-icon", "component": "Icon", "origin": "lucide", "status": "registered", "version": "1.31.0", "coverage": "all", "network": "local-only" },
+    { "id": "profile", "component": "Profile", "origin": "gainfactor", "status": "registered", "fallback": "image-heading-table-tags-prose" },
+    { "id": "info-grid", "component": "InfoGrid", "origin": "gainfactor", "status": "registered", "fallback": "table-or-definition-list" },
+    { "id": "structured-steps", "component": "StructuredSteps", "origin": "gainfactor", "status": "registered", "fallback": "numbered-headings-and-field-lists" },
+    { "id": "content-panel", "component": "ContentPanel", "origin": "gainfactor", "status": "registered", "fallback": "heading-fields-prose-blockquote" },
+    { "id": "grouped-board", "component": "GroupedBoard", "origin": "gainfactor", "status": "registered", "fallback": "group-headings-and-item-lists" },
+    { "id": "mermaid", "component": "Mermaid", "origin": "official-integration", "status": "registered" },
+    { "id": "antv-infographic", "component": "Infographic", "origin": "antv", "status": "registered", "version": "0.2.20", "network": "local-only" },
+    { "id": "node-graph", "component": "NodeGraph", "origin": "gainfactor", "status": "registered" }
+  ],
+  "presentationModules": ["metrics", "cards", "steps", "callout"]
+}

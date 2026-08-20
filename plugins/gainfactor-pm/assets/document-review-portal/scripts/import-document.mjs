@@ -1,5 +1,5 @@
-import { readFile, writeFile } from 'node:fs/promises';
-import { basename, resolve } from 'node:path';
+import { copyFile, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { basename, dirname, extname, resolve } from 'node:path';
 
 const args = process.argv.slice(2);
 const sourcePath = args.shift();
@@ -9,7 +9,7 @@ if (!sourcePath || !outputPath) {
   process.exit(1);
 }
 
-const markdown = await readFile(sourcePath, 'utf8');
+let markdown = await readFile(sourcePath, 'utf8');
 const titleMatch = markdown.match(/^#\s+(.+)$/m);
 const frontmatterMatch = markdown.match(/^---\s*\n([\s\S]*?)\n---\s*\n?/);
 const frontmatterTitle = frontmatterMatch?.[1].match(/^title:\s*["']?(.+?)["']?\s*$/m)?.[1];
@@ -19,6 +19,60 @@ if ((!titleMatch || titleMatch.index === undefined) && !frontmatterTitle) {
 }
 
 const title = (titleMatch?.[1] ?? frontmatterTitle).trim();
+
+const route = outputPath
+  .replace(/^content\/docs\//, '')
+  .replace(/\.(?:md|mdx)$/i, '');
+const assetOutputDir = resolve('public/document-assets', route);
+const copiedImages = new Map();
+let copiedImageCount = 0;
+
+async function importLocalImage(rawTarget) {
+  if (/^(?:[a-z]+:|\/|#)/i.test(rawTarget)) return rawTarget;
+  let portalUrl = copiedImages.get(rawTarget);
+  if (portalUrl) return portalUrl;
+  const decodedTarget = decodeURIComponent(rawTarget);
+  const sourceAsset = resolve(dirname(resolve(sourcePath)), decodedTarget);
+  const extension = extname(sourceAsset).toLowerCase();
+  const stem = basename(sourceAsset, extension)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '') || 'image';
+  copiedImageCount += 1;
+  const outputName = `${String(copiedImageCount).padStart(2, '0')}-${stem}${extension}`;
+  await mkdir(assetOutputDir, { recursive: true });
+  await copyFile(sourceAsset, resolve(assetOutputDir, outputName));
+  portalUrl = `/document-assets/${route}/${outputName}`;
+  copiedImages.set(rawTarget, portalUrl);
+  return portalUrl;
+}
+
+const imagePattern = /!\[([^\]]*)\]\((<[^>]+>|[^)\s]+)(\s+["'][^)]*["'])?\)/g;
+const imageMatches = [...markdown.matchAll(imagePattern)];
+
+for (const match of imageMatches) {
+  const rawTarget = match[2].replace(/^<|>$/g, '');
+  const portalUrl = await importLocalImage(rawTarget);
+  if (portalUrl === rawTarget) continue;
+  markdown = markdown.replace(match[0], `![${match[1]}](${portalUrl}${match[3] ?? ''})`);
+}
+
+const profilePattern = /<Profile\b[\s\S]*?>/g;
+const profileMatches = [...markdown.matchAll(profilePattern)];
+for (const profileMatch of profileMatches) {
+  const imageObject = profileMatch[0].match(/\bimage\s*=\s*\{\{([\s\S]*?)\}\}/);
+  if (!imageObject) continue;
+  const source = imageObject[1].match(/\bsrc\s*:\s*(["'])([^"']+)\1/);
+  const alt = imageObject[1].match(/\balt\s*:\s*(["'])([^"']*)\1/);
+  if (!source) throw new Error('Profile image must contain a string src field');
+  if (!alt?.[2].trim()) throw new Error('Profile image must contain a non-empty alt field');
+  const portalUrl = await importLocalImage(source[2]);
+  if (portalUrl === source[2]) continue;
+  const rewrittenImage = imageObject[0].replace(source[0], `src: ${source[1]}${portalUrl}${source[1]}`);
+  const rewrittenProfile = profileMatch[0].replace(imageObject[0], rewrittenImage);
+  markdown = markdown.replace(profileMatch[0], rewrittenProfile);
+}
+
 const contentStart = titleMatch?.index !== undefined
   ? titleMatch.index + titleMatch[0].length
   : frontmatterMatch?.[0].length ?? 0;

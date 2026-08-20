@@ -1,7 +1,7 @@
 {
   "name": "gainfactor-pm",
-  "version": "2.0.0+codex.20260818142554",
-  "description": "GainFactor-PM \u4ea7\u54c1\u7814\u53d1\u6d41\u7a0b",
+  "version": "2.0.0+codex.20260820110511",
+  "description": "\u4ea7\u54c1\u5b9a\u4e49\u3001\u7528\u6237\u7814\u7a76\u3001\u6307\u6807\u8bbe\u8ba1\u3001\u7814\u53d1\u6587\u6863\u4e0e\u672c\u5730\u8bc4\u5ba1\u95e8\u6237",
   "author": {
     "name": "GainFactor"
   },
@@ -15,17 +15,20 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "GainFactor-PM",
-    "shortDescription": "GainFactor-PM \u4ea7\u54c1\u7814\u53d1\u6d41\u7a0b",
-    "longDescription": "GainFactor-PM \u4ea7\u54c1\u7814\u53d1\u6d41\u7a0b",
+    "shortDescription": "\u4ea7\u54c1\u7814\u7a76\u3001\u7814\u53d1\u6587\u6863\u4e0e\u672c\u5730\u8bc4\u5ba1\u95e8\u6237",
+    "longDescription": "\u8986\u76d6\u4ea7\u54c1\u5b9a\u4e49\u3001\u7528\u6237\u753b\u50cf\u3001\u7ade\u54c1\u5206\u6790\u3001\u4ea7\u54c1\u6307\u6807\u3001\u9700\u6c42\u4e0e\u6280\u672f\u8bbe\u8ba1\u3001\u6d4b\u8bd5\u4ea4\u4ed8\uff0c\u5e76\u63d0\u4f9b\u53ef\u590d\u7528\u7684\u6587\u6863\u8868\u8fbe\u80fd\u529b\u548c\u672c\u5730\u9605\u8bfb\u8bc4\u5ba1\u95e8\u6237\u3002",
     "developerName": "GainFactor",
     "category": "Productivity",
     "capabilities": [
       "Interactive",
       "Write",
-      "Review"
+      "Review",
+      "Document Portal"
     ],
     "defaultPrompt": [
       "\u4f7f\u7528 $guide \u626b\u63cf\u5f53\u524d\u9879\u76ee\u5e76\u63a8\u8350\u4e0b\u4e00\u6b65\u3002",
+      "\u4f7f\u7528 $define-product \u5efa\u7acb\u53ef\u590d\u7528\u7684\u4ea7\u54c1\u5b9a\u4e49\u57fa\u7ebf\u3002",
+      "\u4f7f\u7528 $document-publisher \u4e3a\u62a5\u544a\u9009\u62e9\u95e8\u6237\u8868\u8fbe\u80fd\u529b\u5e76\u6309\u5951\u7ea6\u6784\u5efa\u5185\u5bb9\u3002",
       "\u4f7f\u7528 $prd-writer \u6839\u636e\u9700\u6c42\u548c\u7528\u6237\u65c5\u7a0b\u64b0\u5199 PRD\u3002",
       "\u4f7f\u7528 $test-reviewer \u5ba1\u67e5\u6d4b\u8bd5\u5305\u662f\u5426\u8fbe\u5230\u51c6\u51fa\u6807\u51c6\u3002"
     ],

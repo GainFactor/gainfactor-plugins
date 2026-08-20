@@ -1,0 +1,4 @@
+interface:
+  display_name: "Portal Documents"
+  short_description: "Choose supported portal tools and follow document workflows"
+  default_prompt: "Use $document-publisher to choose supported document tools, author against the portal contract, and follow the correct create or update workflow."
