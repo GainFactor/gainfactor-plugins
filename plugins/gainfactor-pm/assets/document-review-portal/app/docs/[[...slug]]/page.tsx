@@ -14,6 +14,7 @@ import { createRelativeLink } from 'fumadocs-ui/mdx';
 import { BadgeCheck, CalendarDays, FileText, Tag, UserRound } from 'lucide-react';
 import { portalData } from '@/lib/portal-data';
 import { ReviewIssues, ReviewNavigation } from '@/components/review-panels';
+import { ReportPresentation } from '@/components/report-presentation';
 
 export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
   const params = await props.params;
@@ -31,10 +32,13 @@ export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
     updated: '—',
     review: { conclusion: '尚未生成评审结果', issues: [] },
   };
+  const isReport = portalDocument.presentation?.layout === 'report';
+  const hasReviewIssues = portalDocument.review.issues.length > 0;
+  const description = page.data.description;
 
   return (
     <DocsPage full tableOfContent={{ enabled: false }} footer={{ enabled: false }}>
-      <div className="prd-review-layout">
+      <div className={`prd-review-layout${hasReviewIssues ? ' has-review-issues' : ''}${isReport ? ' report-document' : ''}`}>
       <ReviewNavigation toc={page.data.toc.filter((item) => item.depth <= 3).map((item) => ({ title: item.title, url: item.url, depth: item.depth }))} />
       <main className="prd-document">
       <header className="prd-header">
@@ -42,7 +46,7 @@ export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
         <div className="prd-heading-row">
           <div className="prd-heading-copy">
             <DocsTitle className="prd-title">{page.data.title}</DocsTitle>
-            <DocsDescription className="prd-description">{page.data.description}</DocsDescription>
+            <DocsDescription className="prd-description">{description}</DocsDescription>
           </div>
           <div className="page-actions">
             <MarkdownCopyButton markdownUrl={markdownUrl} />
@@ -56,6 +60,7 @@ export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
           <div><CalendarDays aria-hidden="true" /><span><dt>更新时间</dt><dd>{portalDocument.updated}</dd></span></div>
         </dl>
       </header>
+      <ReportPresentation data={portalDocument.presentation} />
       <DocsBody>
         <MDX
           components={getMDXComponents({
@@ -65,7 +70,7 @@ export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
         />
       </DocsBody>
       </main>
-      <ReviewIssues conclusion={portalDocument.review.conclusion} issues={portalDocument.review.issues} />
+      {hasReviewIssues ? <ReviewIssues conclusion={portalDocument.review.conclusion} issues={portalDocument.review.issues} /> : null}
       </div>
     </DocsPage>
   );

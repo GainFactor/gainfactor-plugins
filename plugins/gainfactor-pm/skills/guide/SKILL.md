@@ -30,8 +30,13 @@ description: 'Guide, workflow guide, 流程导航、我该用哪个 skill、下�
 ### 可选分支：产品探索与上下文
 
 - `$define-product` 用于产品本身仍不清晰、或用户画像/竞品分析/市场研究等任务需要稳定产品上下文时
+- `$user-persona` 用于通过隔离虚拟用户 Agent 反馈或已有用户材料形成用户分群、强制 Persona、理想体验路径与功能路线图研究报告
+- `$competitive-analysis` 用于竞品选择、联网调研、功能或 AI 黑盒测试，以及证据化产品决策；执行前必须已有经 `$define-product` 确认的 `PRODUCT_DEFINITION`
+- `$document-publisher` 是所有门户内容的能力与工作流元 Skill：其他 Skill 在构建内容时用它选择已注册工具并直接写出最终格式，完成后再按其流程创建、导入、校验或更新；它内置 AntV Infographic 模板选择规范，但不负责把普通 Markdown 转换成富文档
 - 产物 `PRODUCT_DEFINITION` 可被多个下游任务复用，但不是 BRD 和主流程的强制门禁
-- 已有清晰产品定义、内部效率需求或用户只需要执行明确下游任务时，不要强制推荐
+- 产物 `USER_PERSONA` 是独立研究 artifact，可被 BRD、PRD、竞品分析和市场研究复用，不是主流程强制门禁
+- 产物 `COMPETITIVE_ANALYSIS` 是独立研究 artifact，可被 BRD、PRD、定位与路线图复用，不是主流程强制门禁
+- 除竞品分析外，已有清晰产品定义、内部效率需求或用户只需要执行明确下游任务时，不要强制推荐 `$define-product`
 - 若既有产品定义与新证据冲突，应提示确认，不静默改写
 
 ### 主流程（按默认顺序）
@@ -41,6 +46,9 @@ description: 'Guide, workflow guide, 流程导航、我该用哪个 skill、下�
 对应 skill：
 
 - `$define-product`（可选产品探索）
+- `$user-persona`（可选用户研究）
+- `$competitive-analysis`（可选竞品研究）
+- `$document-publisher`（横切文档能力与发布工作流）
 - `$brd-interviewer`
 - `$uc-interviewer`
 - `$prd-writer`

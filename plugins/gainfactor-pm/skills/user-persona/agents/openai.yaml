@@ -1,0 +1,6 @@
+interface:
+  display_name: "User Persona"
+  short_description: "Build realistic personas and user-led feature priorities"
+  icon_small: "./assets/gainfactor-pm-logo-small.png"
+  icon_large: "./assets/gainfactor-pm-logo.png"
+  default_prompt: "Use $user-persona to build realistic user profiles from concrete behavior, write each validated profile incrementally, and publish a visual user-to-feature priority report."

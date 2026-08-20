@@ -1,695 +1,301 @@
 # gainfactor-pm
 
-研发流程工具集：从业务需求到测试设计与运维准备的完整链路。
+面向 Codex / ChatGPT 桌面端的产品研究与研发文档插件。它覆盖产品定义、用户研究、竞品分析、指标设计、需求与技术设计、测试交付，并提供统一的本地文档阅读与评审门户。
 
-## 概述
+## 能力范围
 
-gainfactor-pm 提供一套结构化的研发文档工具，覆盖从业务想法到测试设计与交付准备的全流程：
+gainfactor-pm 当前包含 26 个可调用 Skill：
 
-- **需求阶段**：BRD 访谈 → 用户旅程对齐 → PRD 撰写/审查
-- **交互验证阶段（前端仓库可选）**：Prototype 设计/评审
-- **设计阶段**：API 契约撰写/审查 → HLD 撰写/审查 → 测试策略撰写/评审 → LLD 撰写/审查
-- **测试与交付准备阶段**：测试规格/测试包撰写 → 测试门禁评审 → Runbook 撰写 / GainFactor-PM 自动化落地
-- **统一阅读与评审**：将 BRD、PRD、HLD、LLD、测试策略和 Runbook 加入同一个本地文档门户
+- **流程导航**：`guide`
+- **产品研究**：`define-product`、`user-persona`、`competitive-analysis`、`product-metrics`
+- **需求与交互**：`brd-interviewer`、`uc-interviewer`、`prd-writer`、`prd-reviewer`、`prototype-designer`、`prototype-reviewer`
+- **接口与设计**：`api-writer`、`api-reviewer`、`hld-writer`、`hld-reviewer`、`lld-writer`、`lld-reviewer`
+- **测试与交付**：`test-strategy-writer`、`test-strategy-reviewer`、`test-spec-writer`、`test-reviewer`、`runbook-writer`
+- **项目规范**：`guardrails-writer`、`guardrails-reviewer`
+- **文档门户**：`document-publisher`、`document-review`
 
-每个环节都有明确的输入输出和质量门禁，确保文档质量和上下游衔接。对于已经准出的 Test Spec，`gainfactor-pm` 也应把用户自然推到 `gainfactor-pm-bot` 的自动化落地链路，而不是停在文档侧。
+本插件不包含测试平台中的 case 注册、pipeline 编排、trigger 或 execution 管理能力。README 只描述当前插件实际提供的 Skill。
 
-默认情况下，`gainfactor-pm` 会跟随用户输入语言输出；用户显式指定语言时以用户指定为准；`TRACEABILITY-METADATA` 的字段名、枚举值与稳定 ID 始终保持英文。
+默认跟随用户输入语言输出；用户显式指定语言时以用户要求为准。`TRACEABILITY-METADATA` 的字段名、枚举值和稳定 ID 始终保持英文。
 
-## 宿主支持
+## 从哪里开始
 
-`gainfactor-pm` 当前仅支持 Codex / ChatGPT 桌面端：
+不确定当前项目处于哪个阶段时，使用：
 
-- 使用 `.codex-plugin/plugin.json` 作为插件入口。
-- 通过 `$skill-name` 调用，例如 `$guide`。
-- `skills/` 中的交互提问、subagent 调度和插件内脚本定位遵循 `references/host-compatibility.md`。
+```text
+$guide 扫描当前项目并推荐下一步
+```
 
-## 追溯元数据约定
+`guide` 会根据仓库中已经存在的文档、状态和准出结果，在本插件实际可用的 Skill 中推荐下一步。
 
-gainfactor-pm 提供统一的 traceability metadata contract，用于 RTM 生成、覆盖率校验和文档间自动追溯。
+## 工作流
 
-- canonical 设计稿：`references/traceability-schema/traceability-schema-v1.md`
-- PRD profile v1 示例：`references/traceability-schema/prd-profile-v1.example.yaml`
-- HLD profile v1 示例：`references/traceability-schema/hld-profile-v1.example.yaml`
-- LLD profile v1 示例：`references/traceability-schema/lld-profile-v1.example.yaml`
-- Test Strategy profile v1 示例：`references/traceability-schema/test-strategy-profile-v1.example.yaml`
-- Test Spec profile v1 示例：`references/traceability-schema/test-spec-profile-v1.example.yaml`
-- trace-lint 契约：`references/traceability-schema/trace-lint-contract-v1.md`
-- trace-build-rtm 契约：`references/traceability-schema/trace-build-rtm-contract-v1.md`
+### 产品研究
 
-当前 rollout 状态是：**PRD / HLD / LLD / Test Strategy / Test Spec 五层已接入；RTM 已支持 PRD（REQ-*）→ HLD（DEC-*/FLOW-*）→ LLD（DEC-*/FLOW-*）→ Test Strategy（RISK-*/MR-*/BEH-*）→ Test Spec（CASE-*）链路聚合。**
+产品研究产物是可复用上下文，不强制要求每个项目全部执行。
 
-从本仓库根目录运行时，最直接的校验命令如下。插件安装后，skill 会先解析实际插件根目录，再调用同一组脚本。
+```mermaid
+flowchart LR
+    A[产品想法或现有产品] --> B["$define-product"]
+    B --> C[PRODUCT_DEFINITION]
+    C --> D["$user-persona"]
+    C --> E["$competitive-analysis"]
+    C --> F["$product-metrics"]
+    D --> G[USER_PERSONA]
+    E --> H[COMPETITIVE_ANALYSIS]
+    F --> I[PRODUCT_METRICS]
+```
+
+- `define-product` 建立产品定位、角色、价值机制、责任边界、生命周期和商业模式基线。
+- `user-persona` 基于具体行为和情境形成用户分群、强制 Persona、理想体验路径及用户反馈驱动的功能优先路径。
+- `competitive-analysis` 研究市场与竞品，通过公开证据、产品体验和必要的 AI 黑盒测试形成产品决策。
+- `product-metrics` 定义主要指标、驱动与过程指标、底线指标、计算口径及响应动作。
+
+### 研发主链路
+
+```mermaid
+flowchart TD
+    A[业务想法] --> B["$brd-interviewer"]
+    B --> C[BRD]
+    C --> D["$uc-interviewer"]
+    D --> E[User Journey]
+    E --> F["$prd-writer"]
+    F --> G["$prd-reviewer"]
+    G --> H[PRD 准出]
+    H --> I{需要交互原型?}
+    I -->|是| J["$prototype-designer"]
+    J --> K["$prototype-reviewer"]
+    K --> L["$api-writer"]
+    I -->|否| L
+    L --> M["$api-reviewer"]
+    M --> N["$hld-writer"]
+    N --> O["$hld-reviewer"]
+    O --> P["$test-strategy-writer"]
+    P --> Q["$test-strategy-reviewer"]
+    Q --> R["$lld-writer"]
+    R --> S["$lld-reviewer"]
+    S --> T["$test-spec-writer"]
+    T --> U["$test-reviewer"]
+    U --> V["$runbook-writer"]
+    V --> W[Runbook]
+```
+
+原型是前端项目中的可选验证阶段。API Contract、HLD、Test Strategy、LLD 和 Test Spec 分别由 Writer 生成，再由对应 Reviewer 作为独立门禁评审。
+
+### 项目级 Guardrails
+
+Guardrails 是项目级工程基线，不随每个功能重复创建。项目启动、重大架构或平台变化、合规要求、事故复盘以及重复评审问题需要固化时使用。
+
+```mermaid
+flowchart LR
+    A[项目启动或重大变化] --> B["$guardrails-writer"]
+    B --> C[Project Guardrails]
+    C --> D["$guardrails-reviewer"]
+    D --> E[下游设计与实现基线]
+```
+
+### 文档门户
+
+文档门户是横跨所有文档类型的表达与阅读能力：
+
+```mermaid
+flowchart LR
+    A[业务 Skill 构建内容] --> B["$document-publisher 查询能力与契约"]
+    B --> C[最终 Markdown或MDX + 可选 portal.json]
+    C --> D["$document-review 挂载或更新"]
+    D --> E[本地阅读与评审门户]
+```
+
+职责边界：
+
+- **业务 Skill** 决定报告体裁、结构、结论、字段和表达选择，并直接写出最终内容。
+- **`document-publisher`** 提供门户已注册能力、组件契约、选择规则、Markdown 降级和创建、校验、更新、预览流程；不把普通 Markdown 二次理解成报告。
+- **`document-review`** 选择或复用目标门户、管理稳定 slug、挂载或更新文档，并保留其他文档和评审数据；不重新设计正文。
+
+## Skill 选择表
+
+| 目标 | 使用 |
+|---|---|
+| 扫描项目并判断下一步 | `$guide` |
+| 定义产品定位、价值与责任边界 | `$define-product` |
+| 建立用户分群、Persona 和用户驱动的功能路径 | `$user-persona` |
+| 研究市场、竞品和产品差异 | `$competitive-analysis` |
+| 定义主要指标、过程指标和底线指标 | `$product-metrics` |
+| 把业务想法整理成 BRD | `$brd-interviewer` |
+| 从 BRD 梳理用户旅程 | `$uc-interviewer` |
+| 撰写或评审 PRD | `$prd-writer` / `$prd-reviewer` |
+| 在前端仓库创建或评审交互原型 | `$prototype-designer` / `$prototype-reviewer` |
+| 撰写或评审 API Contract | `$api-writer` / `$api-reviewer` |
+| 撰写或评审 HLD | `$hld-writer` / `$hld-reviewer` |
+| 撰写或评审测试策略 | `$test-strategy-writer` / `$test-strategy-reviewer` |
+| 撰写或评审 LLD | `$lld-writer` / `$lld-reviewer` |
+| 撰写测试规格或执行测试门禁评审 | `$test-spec-writer` / `$test-reviewer` |
+| 编写部署、回滚、监控与故障处理手册 | `$runbook-writer` |
+| 建立或评审项目级工程规范 | `$guardrails-writer` / `$guardrails-reviewer` |
+| 为门户内容选择组件、图形和写入契约 | `$document-publisher` |
+| 把已完成文档加入统一门户 | `$document-review` |
+
+## 产品研究产物
+
+### PRODUCT_DEFINITION
+
+`define-product` 适用于外部用户产品、现有产品新能力以及需要明确价值和权限边界的内部产品。它输出稳定的产品定义基线，供用户画像、竞品分析、产品指标和需求任务复用。
+
+```text
+$define-product 定义一个帮助独立开发者验证产品方向的服务
+```
+
+### USER_PERSONA
+
+`user-persona` 可以综合用户已有材料，也可以使用相互隔离的虚拟用户 Agent 收集反馈。每个保留群体必须形成代表性 Persona；基于用户反馈推导的功能路径表达理想方向，不等同于正式研发排期。
+
+报告中的人物图片属于 `Profile`，导入门户时由发布器搬运资源并解析首屏卡片映射，不重复插入 Markdown 图片或预测门户资产路径。
+
+```text
+$user-persona 基于 ./docs/Product-Definition-示例产品.mdx 建立用户画像
+```
+
+### COMPETITIVE_ANALYSIS
+
+`competitive-analysis` 要求先明确主产品和竞品范围，区分公开事实、体验观察、合理推测和待验证项。没有实际访问或测试证据时，不填写虚构评分和产品能力。
+
+```text
+$competitive-analysis 基于 ./docs/Product-Definition-示例产品.mdx 分析主要竞品
+```
+
+### PRODUCT_METRICS
+
+`product-metrics` 根据指标任务选择产品级北极星指标或任务级主要指标，建立驱动树、计算契约、底线指标和行动责任。没有事实依据时保留待建立基线或待验证阈值，不编造数字。
+
+```text
+$product-metrics 基于 ./docs/Product-Definition-示例产品.mdx 设计指标体系
+```
+
+## 文档门户能力
+
+### 内容表达
+
+`document-publisher` 当前注册的主要能力包括：
+
+- 标准 Markdown：标题、段落、列表、引用、表格、链接和代码；
+- Mermaid：流程、时序、状态、依赖和节点关系；
+- 本地 AntV Infographic：锁定 npm 版本，不请求 CDN，并内置官方模板选择与语法生成规范；
+- Lucide 图标：完整图标集合，不设业务白名单；
+- Fumadocs / MDX：Callout、Tabs、Steps、Files、TypeTable、ImageZoom；
+- 门户组件：NodeGraph；
+- 通用报告组件：`Profile`、`InfoGrid`、`StructuredSteps`、`ContentPanel`、`GroupedBoard`；
+- Portal Presentation v1：`metrics`、`cards`、`steps`、`callout`。
+
+通用报告组件只负责呈现，不内置优先级、路线图、阶段或特定文档类型语义。所有富组件都需要标准 Markdown 降级方案，并兼顾桌面端、移动端、深浅色和打印布局。
+
+### 图片映射
+
+Portal Presentation 的卡片可以用 `sourceImageAlt` 引用正文图片。发布器可解析：
+
+```md
+![alt](src)
+```
+
+以及：
+
+```mdx
+<Profile image={{ src: "...", alt: "..." }} />
+```
+
+相同 alt 指向相同 src 时合并；相同 alt 指向不同 src 时校验失败，不按出现顺序猜测。
+
+### 本地启动
+
+`document-review` 每次创建或更新门户时，会在门户根目录生成：
+
+- `打开文档门户.command`
+- `关闭文档门户.command`
+
+macOS 用户可以双击启动或关闭。首次打开或内容变化时自动准备构建，后续复用已有构建与服务，无需让 AI 执行启动命令。业务 Skill 已明确要求自动导入时，不再额外询问一次是否生成门户文档。
+
+## 追溯能力
+
+PRD、HLD、LLD、Test Strategy 和 Test Spec 支持统一的 `TRACEABILITY-METADATA`。当前 RTM 可以聚合：
+
+```text
+REQ-* → DEC-*/FLOW-* → DEC-*/FLOW-* → RISK-*/MR-*/BEH-* → CASE-*
+```
+
+主要契约位于 `references/traceability-schema/`。从仓库根目录运行：
 
 ```bash
-python3 plugins/gainfactor-pm/scripts/trace_lint.py <PRD.md 或 metadata.yaml>
-python3 plugins/gainfactor-pm/scripts/trace_lint.py --strict <PRD.md 或 metadata.yaml>
-python3 plugins/gainfactor-pm/scripts/trace_lint.py --format json <PRD.md 或 metadata.yaml>
-python3 plugins/gainfactor-pm/scripts/trace_lint.py plugins/gainfactor-pm/references/traceability-schema/hld-profile-v1.example.yaml
-python3 plugins/gainfactor-pm/scripts/trace_lint.py plugins/gainfactor-pm/references/traceability-schema/lld-profile-v1.example.yaml
-python3 plugins/gainfactor-pm/scripts/trace_lint.py plugins/gainfactor-pm/references/traceability-schema/test-strategy-profile-v1.example.yaml
-python3 plugins/gainfactor-pm/scripts/trace_lint.py plugins/gainfactor-pm/references/traceability-schema/test-spec-profile-v1.example.yaml
-python3 plugins/gainfactor-pm/scripts/trace_build_rtm.py <多个 metadata 文档>
+python3 plugins/gainfactor-pm/scripts/trace_lint.py <文档或 metadata.yaml>
+python3 plugins/gainfactor-pm/scripts/trace_lint.py --strict <文档或 metadata.yaml>
 python3 plugins/gainfactor-pm/scripts/trace_build_rtm.py --format json <多个 metadata 文档>
-python3 plugins/gainfactor-pm/scripts/trace_build_rtm.py --format json <PRD.md> <HLD.md> <LLD.md> <Test-Strategy.md> <Test-Spec.md>
 ```
 
----
+## 安装与更新
 
-## 工作流程
-
-```mermaid
-flowchart TD
-    A[💡 想法] --> B["$brd-interviewer"]
-    B --> C[📄 BRD]
-    C --> D["$uc-interviewer"]
-    D --> E[📄 User Journey]
-    E --> G["$prd-writer"]
-    G --> I["$prd-reviewer"]
-    I --> J[📄 PRD 准出]
-
-    J --> K{需要交互原型吗？}
-    K -->|是| L["$prototype-designer"]
-    L --> M["$prototype-reviewer"]
-    M --> N[📄 Prototype 准出]
-    K -->|否| O["$api-writer"]
-    N --> O
-    O --> P[📄 API Contract]
-    P --> Q["$api-reviewer"]
-    Q --> R[📄 API Contract 准出]
-    R --> S["$hld-writer"]
-    S --> T["$hld-reviewer"]
-    T --> U[📄 HLD 准出]
-    U --> V["$test-strategy-writer"]
-    V --> W["$test-strategy-reviewer"]
-    W --> X[📄 Test Strategy 准出]
-    X --> Y["$lld-writer"]
-    Y --> Z["$lld-reviewer"]
-    Z --> AA[📄 LLD 准出]
-    AA --> AB["$test-spec-writer"]
-    AB --> AC["$test-reviewer"]
-    AC --> AD[📄 测试准出]
-    AD --> AE["$runbook-writer"]
-    AE --> AF[📄 Runbook]
-    AD --> AG["$case-writing"]
-    AG --> AH["$case"]
-    AH --> AI["$pipeline"]
-    AI --> AJ["$trigger"]
-    AJ --> AK["$execution"]
-```
-
----
-
-## 项目级规范维护流程（Guardrails）
-
-> Guardrails 是项目级基线，不随每个功能重复创建，仅在以下情况触发：新项目/架构变更/合规要求/事故复盘。
-
-```mermaid
-flowchart TD
-    A[项目启动/重大变更] --> B["$guardrails-writer"]
-    B --> C[📄 Guardrails]
-    C --> D["$guardrails-reviewer"]
-    D --> E[📄 Guardrails 准出]
-    E --> F[作为 LLD/实现的基线]
-```
-
----
-
-## 我应该用哪个 Skill？
-
-如果你不确定当前项目已经走到哪一步，或者接手的是一个已有部分文档的存量仓库，先运行 `$guide`。它会扫描现有文档、识别准出状态，并推荐下一步最合适的 skill；当 Test Spec 已具备下游 handoff 时，也会把你路由到 `gainfactor-pm-bot` 的自动化落地分支。
-
-### 快速选择表
-
-| 你的情况 | Codex 调用 | 说明 |
-|----------|----------|------|
-| 不确定项目当前在哪一步，或接手了一个已有部分文档的项目 | `$guide` | 扫描现有文档与准出状态，推荐下一步最合适的 skill |
-| 有个模糊的想法，想梳理成业务需求 | `$brd-interviewer` | 通过选择题访谈，输出 BRD |
-| BRD 写完了，要细化用户操作流程 | `$uc-interviewer` | 逐条对齐 user journey |
-| 要写产品需求文档 | `$prd-writer` | 基于 BRD + Journey 撰写 PRD |
-| PRD 写完了，需要独立评审 | `$prd-reviewer` | 多角色视角审查 |
-| 要把 BRD、PRD、HLD 等文档放进同一个阅读站点 | `$document-review-portal` | 创建或持续追加到统一文档阅读与评审门户 |
-| 产品想法尚未定义清楚，或画像/竞品分析缺少产品上下文 | `$define-product` | 形成可复用的产品定义基线 |
-| 有 PRD + User Journey，要在前端仓库先验证交互 | `$prototype-designer` | 生成隔离原型，提前暴露交互、状态和导航问题 |
-| Prototype 做完了，需要作为 API/HLD 前的门禁 | `$prototype-reviewer` | 审查上游对齐、工程隔离和下游输入质量 |
-| PRD 准出了，要定义 API 契约 | `$api-writer` | 输出 OpenAPI/gRPC/Event 等契约 |
-| API 契约写完了，需要评审 | `$api-reviewer` | 检查契约完整性与一致性 |
-| 需要制定项目级工程规范 | `$guardrails-writer` | 建立全局 Guardrails（不随功能重复） |
-| Guardrails 写完了，需要评审 | `$guardrails-reviewer` | 检查触发判定、事实标准、workflow hooks 与规则可执行性 |
-| 有 PRD + API Contract，要写技术方案 | `$hld-writer` | 基于 PRD + 契约撰写 HLD |
-| HLD 写完了，需要技术评审 | `$hld-reviewer` | 检测 PRD→HLD 漂移 |
-| HLD 准出了，要定义测试方法和门禁 | `$test-strategy-writer` | 基于 PRD/API/HLD 定义测试策略 |
-| 测试策略写完了，需要评审 | `$test-strategy-reviewer` | 审查风险覆盖、分层与环境策略 |
-| HLD 准出了，要写详细设计 | `$lld-writer` | 将 HLD 细化为可实现的设计 |
-| LLD 写完了，需要设计评审 | `$lld-reviewer` | 检测 HLD→LLD 一致性 |
-| LLD 准出了，要写完整测试包 | `$test-spec-writer` | 产出 test case package、追溯矩阵与执行说明 |
-| 测试包写完了，需要测试门禁评审 | `$test-reviewer` | 审查覆盖、证据与残余风险 |
-| 测试门禁通过后，要准备运维手册 | `$runbook-writer` | 基于 HLD/LLD/Test 输出生产就绪 Runbook |
-| Test Spec / 测试准出已具备，想落到 GainFactor-PM 自动化 | `$case-writing` | 从 approved Test Spec + `GainFactor-PM Automation Handoff` 生成 GainFactor-PM-compatible cases |
-| 已生成 GainFactor-PM case packages，要注册到平台 | `$case` | 把 package 注册成平台 case |
-| 已有 registered cases，要组装执行链路 | `$pipeline` | 按 decomposition / relay / branch 组装 pipeline |
-| 已有 pipeline，要立即执行或配置入口 | `$trigger` | 发起一次执行，或配置 Plan / Gatekeeper |
-| 执行已经发起，要看进度或查失败 | `$execution` | 查看 execution 状态、历史与失败交接 |
-
-> 说明：`$case-writing`、`$case`、`$pipeline`、`$trigger`、`$execution` 来自同仓库下的 `gainfactor-pm-bot` 插件，是 Test Spec 准出后的自动化落地分支。
-
-### 决策树
-
-```mermaid
-flowchart TD
-    Start{你有什么？} --> A[只有想法/一句话]
-    Start --> B[有 BRD]
-    Start --> C[有 PRD]
-    Start --> D[有 Prototype 沙箱]
-    Start --> E[有 API Contract]
-    Start --> F[有 HLD]
-    Start --> G[有 LLD]
-    Start --> H[有 Test Strategy]
-    Start --> I[有 Test Spec]
-
-    A --> A1["$brd-interviewer"]
-
-    B --> B1{用户流程清晰吗？}
-    B1 -->|不清晰| B2["$uc-interviewer"]
-    B1 -->|清晰| B4["$prd-writer"]
-    B2 --> B4
-    B4 --> B6["$prd-reviewer"]
-
-    C --> C1{需要先验证前端交互吗？}
-    C1 -->|是，且已有 User Journey| C2["$prototype-designer"]
-    C2 --> C3["$prototype-reviewer"]
-    C3 --> C4["$api-writer"]
-    C1 -->|否| C4["$api-writer"]
-    C4 --> C5[📄 API Contract]
-    C5 --> C6["$api-reviewer"]
-
-    D --> D1["$prototype-reviewer"]
-
-    E --> E1{API Contract 已准出？}
-    E1 -->|否| E2["$api-reviewer"]
-    E1 -->|是| E3["$hld-writer"]
-    E3 --> E4["$hld-reviewer"]
-
-    F --> F1{HLD 已准出？}
-    F1 -->|否| F2["$hld-reviewer"]
-    F1 -->|是| F3["$test-strategy-writer"]
-    F3 --> F4["$test-strategy-reviewer"]
-
-    G --> G1{LLD 已准出？}
-    G1 -->|否| G2["$lld-reviewer"]
-    G1 -->|是| G3["$test-spec-writer"]
-
-    H --> H1{Test Strategy 已准出？}
-    H1 -->|否| H2["$test-strategy-reviewer"]
-    H1 -->|是| H3["$lld-writer"]
-    H3 --> H4["$lld-reviewer"]
-
-    I --> I1["$test-reviewer"]
-    I1 --> I2{下一步目标？}
-    I2 -->|发布/运维准备| I3["$runbook-writer"]
-    I2 -->|落到 GainFactor-PM 自动化| I4["$case-writing"]
-    I4 --> I5["$case"]
-    I5 --> I6["$pipeline"]
-    I6 --> I7["$trigger"]
-    I7 --> I8["$execution"]
-```
-
----
-
-## Skills 详情
-
-### define-product
-
-**用途**：通过有终点的六步访谈，明确外部用户产品或现有产品新能力的定位、角色、价值机制、责任边界、冷启动和商业闭环。
-
-它生成独立的 `PRODUCT_DEFINITION` 上下文，可供用户画像、竞品分析、市场分析和 BRD 等任务复用，但不是主流程强制门禁。内部员工效率方案应直接进入 BRD 等适用流程。
-
-```text
-$define-product 我想做一个帮助独立开发者验证产品方向的服务
-```
-
----
-
-### brd-interviewer
-
-**用途**：将模糊的业务想法转化为结构化的 BRD（业务需求文档）
-
-**特点**：
-- 麦肯锡/BCG 顾问式访谈
-- 只问选择题，降低用户认知负担
-- 强制量化成功指标
-- 守住 BRD 边界，不越界到技术方案
-
-**输入**：一句话想法
-**输出**：BRD 文档
-
-**示例**：
-```
-$brd-interviewer 我想提高用户留存率
-```
-
----
-
-### uc-interviewer
-
-**用途**：在 BRD 和 PRD 之间建立对齐检查点，确保用户旅程符合预期
-
-**特点**：
-- 先确认最新批准 BRD baseline，再逐条 Journey 确认
-- 两段式访谈：开放发现 → 结构化确认
-- 逐条 Journey 确认（主流程 → 跳转/分支 → 异常 → 步骤级 edge case matrix）
-- 每个 Journey 确认后再进入下一个
-- 输出带 `TRACEABILITY-METADATA` 的 USER_JOURNEY 基线，可直接喂给 prd-writer
-
-**输入**：BRD 文件路径
-**输出**：User Journey 文档（含 checkpoint 状态与 traceability metadata）
-
-**示例**：
-```
-$uc-interviewer ./docs/BRD-用户认证.md
-```
-
----
-
-### prd-writer
-
-**用途**：撰写高质量的产品需求文档
-
-**特点**：
-- 先读后写，遵循项目现有约定
-- 支持 BRD 1:N 拆分为多个 PRD
-- 自动识别并复用现有能力
-- 守住 PRD 边界，不越界到 HLD
-
-**输入**：BRD 路径 + User Journey 路径（可选）
-**输出**：PRD 文档
-
-**示例**：
-```
-$prd-writer ./docs/BRD-订单系统.md ./docs/User-Journeys.md
-```
-
----
-
-### prd-reviewer
-
-**用途**：独立第三方视角审查 PRD，作为"准出门禁"
-
-**特点**：
-- 多角色视角：PM、开发、测试、业务方
-- 问题分级：P0 阻塞 / P1 严重 / P2 建议
-- 迭代审查直到放行
-- 输出审查报告 + 准出证书
-
-**输入**：PRD 文件路径
-**输出**：审查报告 + 准出证书（通过时）
-
-**示例**：
-```
-$prd-reviewer ./docs/PRD-用户认证.md
-```
-
-### document-review-portal
-
-将一份或多份 Markdown/MDX 文档放入同一个本地阅读与评审门户。左侧会自动形成“产品需求 / 技术设计 / 质量与交付 / 其他文档”一级折叠分组，具体文档作为二级条目。对同一目标目录重复调用时，使用不同 slug 追加文档，使用相同 slug 更新既有文档；模板不会携带演示用正文或 Mock 评审数据。
-
-```text
-$document-review-portal 把 ./docs/BRD.md、./docs/PRD.md 和 ./docs/HLD.md 加入同一个文档门户
-```
-
----
-
-### prototype-designer
-
-**用途**：在前端仓库中生成可交互的 UI 原型，在进入 API Contract / HLD 之前验证交互模式和流转逻辑
-
-**特点**：
-- 原型服务于验证，不是生产代码
-- 默认沙箱隔离，避免污染生产目录
-- 优先复用仓库现有组件、路由和样式体系
-- 用 mock 数据提前暴露页面状态和数据需求
-- 页面可追溯到 User Journey 节点和 PRD 需求
-- 默认接入页面评审模式，用户可直接标注意见并让 AI 读取，无需下载文件
-
-**输入**：PRD 路径 + User Journey 路径
-**输出**：原型沙箱目录 + Prototype Manifest + 交付摘要
-
-**示例**：
-```
-$prototype-designer ./docs/PRD-用户认证.md ./docs/User-Journeys-用户认证.md
-```
-
----
-
-### prototype-reviewer
-
-**用途**：作为 Prototype 进入 API Contract / HLD 前的独立门禁，审查上游对齐、交互完整性、工程隔离和下游输入质量
-
-**特点**：
-- 四道门审查：上游对齐 → 原型完整性 → 工程隔离 → 下游可用性
-- 强调沙箱目录、路由前缀、零依赖新增、零生产文件改动
-- 同时检查 Prototype 对 API Contract 和 HLD 的输入是否清晰
-- 可读取页面中已记录的结构化评审意见并纳入四道门审查
-- 严格准出：P0=0, P1=0, P2≤2
-
-**输入**：原型沙箱目录路径 + PRD 路径 + User Journey 路径
-**输出**：审查报告 + 准出证书（通过时）
-
-**示例**：
-```
-$prototype-reviewer ./src/prototype ./docs/PRD-用户认证.md ./docs/User-Journeys-用户认证.md
-```
-
----
-
-### api-writer
-
-**用途**：基于 PRD 产出可审查的 API 契约/协议文档
-
-**特点**：
-- 支持 9 种协议：HTTP/GraphQL/gRPC/Event/WebSocket/Webhook/SDK/File/IPC
-- 多协议时自动生成 Contract Index
-- PRD → Contract 100% 覆盖检查
-- 只写接口，不写实现
-
-**输入**：PRD 文件路径
-**输出**：API Contract 文档
-
-**示例**：
-```
-$api-writer ./docs/PRD-订单系统.md
-```
-
----
-
-### api-reviewer
-
-**用途**：评审 API 契约/接口协议文档，作为进入 HLD/LLD/实现前的门禁
-
-**特点**：
-- 四道门禁：基线与覆盖 → 协议完整性 → 漂移/冲突 → 兼容性/演进
-- 强制 PRD → Contract 100% 覆盖
-- 多协议强制 Contract Index
-- 严格准出：P0=0, P1=0, P2≤2
-
-**输入**：API Contract 路径 + PRD 路径（可选：Index 路径）
-**输出**：审查报告 + 准出证书（通过时）
-
-**示例**：
-```
-$api-reviewer ./docs/API-Contract-订单系统.md ./docs/PRD-订单系统.md
-```
-
----
-
-### guardrails-writer
-
-**用途**：创建或更新项目级 Guardrails 基线，用于约束主流程而不是替代主流程
-
-**特点**：
-- 先判定是否真的需要更新，再决定改哪些领域
-- 首次生成支持访谈式与仓库分析式两种模式
-- 风险优先，覆盖安全/API/数据/发布/可观测性
-- Must/Should/Nice 分级、例外流程、下游重审钩子
-
-**输入**：项目/规范路径 + 变更背景（如有）
-**输出**：Guardrails 文档 + 下游工作流钩子摘要
-
-**示例**：
-```
-$guardrails-writer ./docs/project-context
-```
-
----
-
-### guardrails-reviewer
-
-**用途**：评审 Guardrails 作为项目级治理基线是否可准出
-
-**特点**：
-- 五道门：触发判定 → 事实标准 → 规则质量 → workflow hooks → 可落地性
-- 严格准出：P0=0, P1=0, P2≤2
-
-**输入**：Guardrails 路径
-**输出**：审查报告 + 准出证书（通过时）
-
-**示例**：
-```
-$guardrails-reviewer ./docs/Guardrails.md
-```
-
----
-
-### hld-writer
-
-**用途**：将 PRD 需求转化为高层技术设计文档
-
-**特点**：
-- 聚焦高成本决策：技术选型、架构模式
-- 强制 PRD 需求映射
-- 基于 API Contract 作为接口唯一事实源
-- 复用 vs 新建决策
-- 不写实现代码
-
-**输入**：PRD 路径 + API Contract 路径
-**输出**：HLD 文档
-
-**示例**：
-```
-$hld-writer ./docs/PRD-用户认证.md ./docs/API-Contract-用户认证.md
-```
-
----
-
-### hld-reviewer
-
-**用途**：模拟真实 Design Review 会议，检测 PRD→HLD 漂移
-
-**特点**：
-- 三道门禁：PRD 覆盖 → 技术决策 → 风险评估
-- 漂移检测：遗漏、膨胀、变形、降级
-- 多角色视角：架构师、安全、SRE、业务方
-- 输出覆盖表 + 漂移报告
-
-**输入**：HLD 路径 + PRD 路径
-**输出**：审查报告 + 准出证书（通过时）
-
-**示例**：
-```
-$hld-reviewer ./docs/HLD-用户认证.md ./docs/PRD-用户认证.md
-```
-
----
-
-### test-strategy-writer
-
-**用途**：基于 PRD、API Contract、HLD 产出测试策略，明确怎么测
-
-**特点**：
-- 风险驱动：先识别关键业务/数据/兼容/稳定性风险
-- 分层明确：System Integration / E2E / Regression / Compatibility / Non-functional 分工清晰
-- 强制环境/数据/依赖策略
-- 明确开发内建验证属于上游前置条件
-- 只写独立测试方法，不写详细 case
-
-**输入**：PRD 路径 + API Contract 路径 + HLD 路径 + Guardrails 路径（如有）
-**输出**：Test Strategy 文档
-
-**示例**：
-```
-$test-strategy-writer ./docs/PRD-用户认证.md ./docs/API-Contract-用户认证.md ./docs/HLD-用户认证.md ./docs/Guardrails.md
-```
-
----
-
-### test-strategy-reviewer
-
-**用途**：评审测试策略，确认风险覆盖、独立测试分层与门禁标准是否成立
-
-**特点**：
-- 四道门禁：基线与范围 → 风险覆盖与分层 → 环境/数据/依赖 → 门禁与自动化
-- 严格准出：P0=0, P1=0, P2≤2
-- 可作为 `test-spec-writer` 的正式基线
-
-**输入**：Test Strategy 路径 + PRD 路径 + API Contract 路径 + HLD 路径
-**输出**：审查报告 + 准出证书（通过时）
-
-**示例**：
-```
-$test-strategy-reviewer ./docs/Test-Strategy-用户认证.md ./docs/PRD-用户认证.md ./docs/API-Contract-用户认证.md ./docs/HLD-用户认证.md
-```
-
----
-
-### lld-writer
-
-**用途**：将 HLD 架构决策细化为可实现的低层设计文档
-
-**特点**：
-- 模块化组合：Core + Add-ons + Profile + Guardrails
-- 基于 API Contract 作为接口唯一事实源
-- 输出 LLD Manifest 记录模块选择与理由
-- 包含伪代码、流程图、测试设计
-- 不写完整实现代码
-
-**输入**：PRD 路径 + HLD 路径 + API Contract 路径 + Guardrails 路径（如有）
-**输出**：LLD 文档 + LLD Manifest + 追溯映射表
-
-**示例**：
-```
-$lld-writer ./docs/PRD-用户认证.md ./docs/HLD-用户认证.md ./docs/API-Contract-用户认证.md ./docs/Guardrails.md
-```
-
----
-
-### lld-reviewer
-
-**用途**：评审 LLD，检测 HLD→LLD 漂移，作为实现前的最后门禁
-
-**特点**：
-- 四道门禁：基线与 Manifest → 一致性与漂移 → 模块完整性 → 可实现性与风险
-- 严格准出：P0=0, P1=0, P2≤2 才放行
-- Guardrails 最高优先级
-- Contract 是事实源，不得重写
-
-**输入**：LLD 路径 + PRD 路径 + HLD 路径 + API Contract 路径 + Guardrails 路径（如有）
-**输出**：审查报告 + 准出证书（通过时）
-
-**示例**：
-```
-$lld-reviewer ./docs/LLD-用户认证.md ./docs/PRD-用户认证.md ./docs/HLD-用户认证.md ./docs/API-Contract-用户认证.md ./docs/Guardrails.md
-```
-
----
-
-### test-spec-writer
-
-**用途**：基于批准的 Test Strategy 与 LLD，产出完整的测试规格与 test case package
-
-**特点**：
-- 输出完整 package，而非零散 case
-- 强制追溯：需求/接口/设计/风险 → 测试项
-- 细化主流程、分支、异常、边界、系统集成、回归与非功能验证
-- 输出覆盖率摘要：需求/风险/外部行为/场景/NFR 分项统计
-- 包含环境、数据、依赖与证据要求
-- 不展开开发内建测试层的详细 case
-
-**输入**：PRD 路径 + API Contract 路径 + HLD 路径 + LLD 路径 + Test Strategy 路径
-**输出**：Test Spec / Test Case Package
-
-**示例**：
-```
-$test-spec-writer ./docs/PRD-用户认证.md ./docs/API-Contract-用户认证.md ./docs/HLD-用户认证.md ./docs/LLD-用户认证.md ./docs/Test-Strategy-用户认证.md
-```
-
----
-
-### test-reviewer
-
-**用途**：评审测试包，检查覆盖、追溯、执行证据与残余风险，作为发布准备前的测试门禁
-
-**特点**：
-- 四道门禁：基线与追溯 → 覆盖与漂移 → 可执行性 → 执行证据与残余风险
-- 支持设计准备评审与发布前测试门禁两种模式
-- 使用统一的测试设计覆盖率口径做门禁判断
-- 严格准出：P0=0, P1=0, P2≤2
-
-**输入**：Test Spec 路径 + Test Strategy 路径 + 执行摘要/缺陷清单（发布前模式建议提供）
-**输出**：审查报告 + 准出证书（通过时）
-
-**示例**：
-```
-$test-reviewer ./docs/Test-Spec-用户认证.md ./docs/Test-Strategy-用户认证.md ./docs/test-execution-summary.md
-```
-
----
-
-### runbook-writer
-
-**用途**：基于 HLD、LLD、测试约束与交付方式，编写生产就绪的 Runbook
-
-**特点**：
-- 覆盖部署、回滚、监控、故障处理与值班手册
-- 双阶段审查：Spec compliance → Quality review
-- Context 隔离：Writer/Reviewer 使用隔离上下文
-
-**输入**：HLD 路径 + LLD 路径 + API Contract 路径 + Guardrails 路径（如有）
-**输出**：Runbook 文档
-
-**示例**：
-```
-$runbook-writer ./docs/HLD-用户认证.md ./docs/LLD-用户认证.md ./docs/API-Contract-用户认证.md ./docs/Guardrails.md
-```
-
----
-
-## 文档流转关系
-
-| 上游文档 | Skill | 下游文档 |
-|----------|-------|----------|
-| 模糊的外部用户产品想法 | define-product | Product Definition（可选上下文） |
-| Product Definition | 用户画像 / 竞品分析 / 市场分析 / brd-interviewer | 对应研究或需求产物 |
-| 想法 | brd-interviewer | BRD |
-| BRD | uc-interviewer | User Journey |
-| BRD + Journey | prd-writer | PRD |
-| PRD | prd-reviewer | PRD（准出） |
-| PRD + User Journey | prototype-designer | Prototype 沙箱 + Manifest + 交付摘要 |
-| Prototype 沙箱 + PRD + User Journey | prototype-reviewer | Prototype（准出） |
-| PRD | api-writer | API Contract |
-| PRD + API Contract | api-reviewer | API Contract（准出） |
-| PRD + API Contract | hld-writer | HLD |
-| HLD + PRD | hld-reviewer | HLD（准出） |
-| PRD + API Contract + HLD + Guardrails（如有） | test-strategy-writer | Test Strategy |
-| Test Strategy + PRD + API Contract + HLD | test-strategy-reviewer | Test Strategy（准出） |
-| 项目启动/变更 | guardrails-writer | Guardrails |
-| Guardrails | guardrails-reviewer | Guardrails（准出） |
-| PRD + HLD + Contract + Guardrails（如有） | lld-writer | LLD + Manifest |
-| LLD + PRD + HLD + Contract + Guardrails（如有） | lld-reviewer | LLD（准出） |
-| PRD + API Contract + HLD + LLD + Test Strategy | test-spec-writer | Test Spec / Test Case Package |
-| Test Spec + Test Strategy + 执行摘要（可选） | test-reviewer | 测试准出 |
-| HLD + LLD + API Contract + Guardrails（如有） | runbook-writer | Runbook |
-| Approved Test Spec + GainFactor-PM Automation Handoff | case-writing | GainFactor-PM platform case packages + decomposition |
-| GainFactor-PM platform case packages | case | Registered GainFactor-PM cases |
-| Registered GainFactor-PM cases + decomposition | pipeline | GainFactor-PM pipeline |
-| GainFactor-PM pipeline | trigger | Trigger / ad-hoc execution |
-| Triggered pipeline execution | execution | Execution 观测与管理 |
-
----
-
-## 安装
-
-### Codex / ChatGPT 桌面端
-
-本仓库已经包含本地 Marketplace 配置：
+仓库包含本地 Marketplace：
 
 ```text
 .agents/plugins/marketplace.json
 plugins/gainfactor-pm/
 ```
 
-请先进入同时包含 `.agents/` 和 `plugins/` 的仓库根目录：
-
-```bash
-cd "<本仓库根目录>"
-```
-
-首次安装时，注册本地 Marketplace，然后安装插件：
+在仓库根目录首次安装：
 
 ```bash
 codex plugin marketplace add .
 codex plugin add gainfactor-pm@gainfactor-plugins
 ```
 
-如果 Marketplace 已经注册，插件更新后只需重新执行：
+插件更新后重新安装：
 
 ```bash
 codex plugin add gainfactor-pm@gainfactor-plugins
 ```
 
-可使用以下命令检查安装状态：
+检查安装状态：
 
 ```bash
 codex plugin list
 ```
 
-安装或更新完成后，请新建一个 Codex 任务，使新的 Skills 和插件资源生效。
+安装或更新后，请新建 Codex 任务，使新的 Skill 和插件资源生效。
+
+## 开发验证
+
+插件结构校验：
+
+```bash
+python3 /Users/dylan/.codex/skills/.system/plugin-creator/scripts/validate_plugin.py plugins/gainfactor-pm
+```
+
+文档编译与门户导入测试：
+
+```bash
+python3 -m unittest \
+  plugins/gainfactor-pm/scripts/tests/test_compile_portal_document.py \
+  plugins/gainfactor-pm/scripts/tests/test_create_document_portal.py
+```
+
+门户构建：
+
+```bash
+pnpm --dir plugins/gainfactor-pm/assets/document-review-portal run build
+```
+
+更新本地插件缓存版本：
+
+```bash
+python3 /Users/dylan/.codex/skills/.system/plugin-creator/scripts/update_plugin_cachebuster.py \
+  plugins/gainfactor-pm
+codex plugin add gainfactor-pm@gainfactor-plugins
+```
+
+## 目录
+
+```text
+plugins/gainfactor-pm/
+├── .codex-plugin/plugin.json
+├── assets/document-review-portal/   # 本地文档门户模板
+├── references/                      # 跨 Skill 契约与追溯规范
+├── scripts/                         # 导入、编译和追溯工具
+└── skills/                          # 26 个可调用 Skill
+```

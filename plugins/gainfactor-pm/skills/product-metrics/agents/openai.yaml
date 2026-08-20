@@ -1,0 +1,4 @@
+interface:
+  display_name: "Product Metrics"
+  short_description: "Define north-star, process, and guardrail product metrics"
+  default_prompt: "Use $product-metrics to build a measurable product metric system from my product definition and publish it to the document portal."
