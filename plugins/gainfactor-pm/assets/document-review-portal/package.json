@@ -8,11 +8,14 @@
     "import:document": "node scripts/import-document.mjs",
     "start": "serve out",
     "types:check": "next typegen && tsc --noEmit",
-    "lint": "eslint"
+    "lint": "eslint",
+    "visual:gate": "node scripts/visual-release-gate.mjs",
+    "publish:check": "pnpm build && node scripts/visual-release-gate.mjs"
   },
   "dependencies": {
     "@antv/infographic": "0.2.20",
     "@mermaid-js/layout-elk": "^0.2.2",
+    "@radix-ui/themes": "3.3.0",
     "cnfast": "^0.1.0",
     "fumadocs-core": "16.14.4",
     "fumadocs-mdx": "15.2.3",
@@ -25,6 +28,8 @@
     "react-dom": "^19.2.8"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
+    "@playwright/test": "^1.51.1",
     "@tailwindcss/postcss": "^4.3.3",
     "@types/mdx": "^2.0.14",
     "@types/node": "^26.2.0",

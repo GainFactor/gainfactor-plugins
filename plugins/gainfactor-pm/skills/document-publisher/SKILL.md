@@ -1,31 +1,47 @@
 ---
 name: document-publisher
-description: Expose the GainFactor document portal's supported authoring capabilities and the workflows for creating, importing, validating, updating, and previewing final MDX portal documents. Use when another skill needs to choose standard Markdown syntax within MDX, MDX components, Mermaid, AntV Infographic, or portal presentation tools while constructing content, or when a completed portal document must be published or updated. This is a capability and workflow skill, not a semantic document converter.
+description: Design and publish documents for the GainFactor local document portal. Use when writing final portal MDX, using registered portal components, validating portal manifests, importing or updating a completed document, attaching review findings, or verifying and previewing a GainFactor portal publication. Do not use for general Markdown writing or unrelated web publishing.
 ---
 
-# 文档门户能力与工作流
+# Document Publisher
 
-像 lark-cli 的文档 Skill 一样，对外说明门户能表达什么、应该怎样写、如何创建或更新。调用本 Skill 的业务 Skill 在构建内容时直接产出符合门户契约的最终 MDX、图形 DSL 和可选 Portal Presentation；标准 Markdown 语法可以嵌在 MDX 内，本 Skill 不把一份普通 Markdown 二次理解成业务报告。
+## 场景与 Shortcut 路由
 
-## 必读参考
+**CRITICAL：先判断当前动作，只读取该场景的参考文件；不要在开始时批量读取 references。每份参考只在首次进入对应阶段时读取一次。**
 
-1. **表达设计 / 内容构建**：先读取 [表达决策框架](references/expression-design.md)，产出页面蓝图；再读取 [能力与格式](references/capabilities.md)、[工具目录与写法](references/tool-catalog.md) 和 [写入契约](references/authoring-contract.md)。使用 Profile、InfoGrid、StructuredSteps、ContentPanel 或 GroupedBoard 时读取 [通用报告组件](references/generic-report-components.md)；使用图标时读取 [Lucide 图标渠道与写法](references/lucide-icons.md)；选择 AntV Infographic 时，再读取 [官方 Infographic 语法规范](references/antv-infographic-syntax.md)。
+### 内容构建
 
-最终交付始终直接写入 `.mdx`。本文所称“Markdown 降级”仅指：某个富组件不可用时，在**同一份最终 `.mdx`** 中改用标准 Markdown 语法表达；它不是独立 `.md` 文件、临时稿，也不是 Markdown→MDX 转换流程。
-2. **创建 / 导入 / 更新 / 验证 / 预览**：读取 [发布工作流](references/publish-workflow.md)。
+- **设计并直接编写最终 MDX — [`authoring-workflow`](references/authoring-workflow.md)**：新建完整报告、重构整篇文档或需要在多种表达方式间做选择时读取。局部文案或字段更新不要求重新制作页面蓝图。
+- **查询或使用正文组件 — [`components/index`](references/components/index.md)**：先读索引，再只读取被选组件的参考文件。
+- **维护统一组件样式 — [`components/design-system`](references/components/design-system.md)**：只在修改门户主题、视觉 Token、组件样式或视觉门禁时读取。
+- **使用图标或 Mermaid — [`visuals`](references/visuals/index.md)**：按索引进入图标或关系图说明。
+- **使用 AntV Infographic — [`infographic/index`](references/infographic/index.md)**：只有已经确认需要 Infographic 时读取，再进入详细语法。
+- **生成或更新 `.portal.json` — [`presentation`](references/presentation.md)**：只处理正文之前的可选首屏摘要。
+- **确定正式产物目录、稳定文件名与门户位置 — [`artifact-management`](references/artifact-management.md)**：新建文档、确定主体 slug 或维护上游 Skill 时读取。
 
-## 边界
+### 发布操作
 
-- 本 Skill 定义通用格式、组件能力、选择规则和操作流程，不判断业务文档应该写哪些结论。
-- 业务 Skill 负责文档体裁、内容结构、组件选择、图形 DSL 及 presentation manifest，并直接写出最终内容。
-- `../../assets/document-review-portal/portal-capabilities.json` 是机器可读的唯一能力注册表；工具目录、格式校验器和门户组件注册必须与其一致。
-- 最终 MDX 是完整、可独立阅读的正文来源；presentation manifest 是可选的首屏视图，不替代正文。
-- 导入脚本只能机械处理 frontmatter、相对资源、清单和导航；不得按标题、文档类型或正文语义生成视觉模块。
-- 校验器只能验证已写格式，不得补写、改写或推导内容。
-- 同一 slug 表示更新，保留门户内其他文档和评审数据。
+- **只验证现有 MDX / manifest — [`validation`](references/validation.md)**：只检查源文件、引用和内容契约，不构建门户。
+- **发布或更新最终文档 — [`publishing/publish`](references/publishing/publish.md)**：门户发现、导入、构建、视觉门禁与发布状态。
+- **挂载结构化评审结果 — [`publishing/review-findings`](references/publishing/review-findings.md)**。
+- **打开、关闭或检查门户 — [`publishing/preview`](references/publishing/preview.md)**：只有用户要求运行或预览时读取。
+- **发布、构建或预览失败 — [`publishing/troubleshooting`](references/publishing/troubleshooting.md)**：仅在失败发生后读取。
 
-## 表达设计要求
+### 上游 Skill 集成
 
-调用方不能从“有什么组件”直接跳到“写哪个组件”。在写正文前，先按 `expression-design.md` 判断读者任务、信息关系、阅读层级与证据密度，并形成简短页面蓝图。蓝图决定正文结构、可视化位置和工具选择，但不改变业务结论。
+- **定义业务 Skill 的门户交付契约 — [`upstream-contract`](references/upstream-contract.md)**：仅在创建或维护调用本 Skill 的业务 Skill 时读取。
 
-页面蓝图是写作过程产物，不要求原样出现在最终文档。没有明确阅读收益时保留 Markdown；有表达需求但无已注册工具时记录能力缺口，不得用近似组件硬凑。
+### 分阶段验证入口
+
+- **局部内容或样式修改**：类型检查、Lint 和 Quick；进入 [`publishing/publish`](references/publishing/publish.md) 的“日常修改”。
+- **公共组件、Token、响应式或图形能力完成**：执行 Full；进入 [`publishing/publish`](references/publishing/publish.md) 的“能力阶段完成”。
+- **正式发布**：构建、Full 和契约测试全部通过；进入 [`publishing/publish`](references/publishing/publish.md) 的“正式发布”。
+
+## 不在本 Skill 范围
+
+- 不判断 PRD、画像、竞品分析或其他业务文档应该得出什么结论。
+- 不把普通 Markdown 在发布阶段自动“美化”或转换成富组件。
+- 不在导入阶段从正文推导首屏模块、图形或业务语义。
+- 专业 Reviewer 负责生成评审结论；本 Skill 只校验和挂载调用方提供的结构化评审数据。
+
+纯标准 Markdown 文档可以使用 `.md`；使用任何注册组件时最终源文件必须为 `.mdx`。富组件不可用时，在同一文件中降级为标准 Markdown。机器可读能力以 `../../assets/document-review-portal/portal-capabilities.json` 为准。

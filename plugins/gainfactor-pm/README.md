@@ -4,7 +4,7 @@
 
 ## 能力范围
 
-gainfactor-pm 当前包含 26 个可调用 Skill：
+gainfactor-pm 当前包含 25 个可调用 Skill：
 
 - **流程导航**：`guide`
 - **产品研究**：`define-product`、`user-persona`、`competitive-analysis`、`product-metrics`
@@ -12,7 +12,7 @@ gainfactor-pm 当前包含 26 个可调用 Skill：
 - **接口与设计**：`api-writer`、`api-reviewer`、`hld-writer`、`hld-reviewer`、`lld-writer`、`lld-reviewer`
 - **测试与交付**：`test-strategy-writer`、`test-strategy-reviewer`、`test-spec-writer`、`test-reviewer`、`runbook-writer`
 - **项目规范**：`guardrails-writer`、`guardrails-reviewer`
-- **文档门户**：`document-publisher`、`document-review`
+- **文档门户**：`document-publisher`
 
 本插件不包含测试平台中的 case 注册、pipeline 编排、trigger 或 execution 管理能力。README 只描述当前插件实际提供的 Skill。
 
@@ -102,15 +102,14 @@ flowchart LR
 flowchart LR
     A[业务 Skill 构建内容] --> B["$document-publisher 查询能力与契约"]
     B --> C[最终 Markdown或MDX + 可选 portal.json]
-    C --> D["$document-review 挂载或更新"]
+    C --> D["$document-publisher 导入、构建与验证"]
     D --> E[本地阅读与评审门户]
 ```
 
 职责边界：
 
 - **业务 Skill** 决定报告体裁、结构、结论、字段和表达选择，并直接写出最终内容。
-- **`document-publisher`** 提供门户已注册能力、组件契约、选择规则、Markdown 降级和创建、校验、更新、预览流程；不把普通 Markdown 二次理解成报告。
-- **`document-review`** 选择或复用目标门户、管理稳定 slug、挂载或更新文档，并保留其他文档和评审数据；不重新设计正文。
+- **`document-publisher`** 提供门户已注册能力、组件契约、选择规则、Markdown 降级，以及门户发现、创建、更新、评审挂载、构建、验证和预览流程；发布阶段不把普通 Markdown 二次理解成报告。
 
 ## Skill 选择表
 
@@ -132,8 +131,7 @@ flowchart LR
 | 撰写测试规格或执行测试门禁评审 | `$test-spec-writer` / `$test-reviewer` |
 | 编写部署、回滚、监控与故障处理手册 | `$runbook-writer` |
 | 建立或评审项目级工程规范 | `$guardrails-writer` / `$guardrails-reviewer` |
-| 为门户内容选择组件、图形和写入契约 | `$document-publisher` |
-| 把已完成文档加入统一门户 | `$document-review` |
+| 设计门户内容，或将已完成文档导入、验证和预览 | `$document-publisher` |
 
 ## 产品研究产物
 
@@ -149,10 +147,10 @@ $define-product 定义一个帮助独立开发者验证产品方向的服务
 
 `user-persona` 可以综合用户已有材料，也可以使用相互隔离的虚拟用户 Agent 收集反馈。每个保留群体必须形成代表性 Persona；基于用户反馈推导的功能路径表达理想方向，不等同于正式研发排期。
 
-报告中的人物图片属于 `Profile`，导入门户时由发布器搬运资源并解析首屏卡片映射，不重复插入 Markdown 图片或预测门户资产路径。
+报告中的人物图片属于 `PersonaBrief`，导入门户时由发布器搬运资源并解析首屏卡片映射，不重复插入 Markdown 图片或预测门户资产路径。
 
 ```text
-$user-persona 基于 ./docs/Product-Definition-示例产品.mdx 建立用户画像
+$user-persona 基于 ./docs/gainfactor/example-product/product-definition.mdx 建立用户画像
 ```
 
 ### COMPETITIVE_ANALYSIS
@@ -160,7 +158,7 @@ $user-persona 基于 ./docs/Product-Definition-示例产品.mdx 建立用户画�
 `competitive-analysis` 要求先明确主产品和竞品范围，区分公开事实、体验观察、合理推测和待验证项。没有实际访问或测试证据时，不填写虚构评分和产品能力。
 
 ```text
-$competitive-analysis 基于 ./docs/Product-Definition-示例产品.mdx 分析主要竞品
+$competitive-analysis 基于 ./docs/gainfactor/example-product/product-definition.mdx 分析主要竞品
 ```
 
 ### PRODUCT_METRICS
@@ -168,10 +166,28 @@ $competitive-analysis 基于 ./docs/Product-Definition-示例产品.mdx 分析�
 `product-metrics` 根据指标任务选择产品级北极星指标或任务级主要指标，建立驱动树、计算契约、底线指标和行动责任。没有事实依据时保留待建立基线或待验证阈值，不编造数字。
 
 ```text
-$product-metrics 基于 ./docs/Product-Definition-示例产品.mdx 设计指标体系
+$product-metrics 基于 ./docs/gainfactor/example-product/product-definition.mdx 设计指标体系
 ```
 
 ## 文档门户能力
+
+### 产物目录
+
+产品型正式文档使用稳定目录与文件名：
+
+```text
+docs/gainfactor/{product-slug}/
+├── product-definition.mdx
+├── user-persona.mdx
+├── competitive-analysis.mdx
+├── product-metrics.mdx
+├── assets/{artifact-key}/
+└── .work/
+
+.gainfactor/portal/        # 可从正式源文件重建的统一本地门户
+```
+
+文件名不包含日期；版本、状态和更新时间进入文档元信息与 portal manifest。`.portal.json`、`.review.json` 与正文同名，生成门户和研究 sidecar 默认不作为正式内容源。
 
 ### 内容表达
 
@@ -182,8 +198,8 @@ $product-metrics 基于 ./docs/Product-Definition-示例产品.mdx 设计指标�
 - 本地 AntV Infographic：锁定 npm 版本，不请求 CDN，并内置官方模板选择与语法生成规范；
 - Lucide 图标：完整图标集合，不设业务白名单；
 - Fumadocs / MDX：Callout、Tabs、Steps、Files、TypeTable、ImageZoom；
-- 门户组件：NodeGraph；
-- 通用报告组件：`Profile`、`InfoGrid`、`StructuredSteps`、`ContentPanel`、`GroupedBoard`；
+- 门户图形：Mermaid 与 AntV Infographic；
+- 通用报告组件：`PersonaBrief`、`FieldList`、`Panel`、`Board`、`EvidenceStep`；非人物场景使用 `Panel + FieldList`，线性步骤使用 Fumadocs `Steps/Step`；
 - Portal Presentation v1：`metrics`、`cards`、`steps`、`callout`。
 
 通用报告组件只负责呈现，不内置优先级、路线图、阶段或特定文档类型语义。所有富组件都需要标准 Markdown 降级方案，并兼顾桌面端、移动端、深浅色和打印布局。
@@ -199,14 +215,14 @@ Portal Presentation 的卡片可以用 `sourceImageAlt` 引用正文图片。发
 以及：
 
 ```mdx
-<Profile image={{ src: "...", alt: "..." }} />
+<PersonaBrief name="林岚" image={{ src: "...", alt: "..." }} />
 ```
 
 相同 alt 指向相同 src 时合并；相同 alt 指向不同 src 时校验失败，不按出现顺序猜测。
 
 ### 本地启动
 
-`document-review` 每次创建或更新门户时，会在门户根目录生成：
+`document-publisher` 每次创建或更新门户时，会在门户根目录生成：
 
 - `打开文档门户.command`
 - `关闭文档门户.command`

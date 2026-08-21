@@ -33,6 +33,7 @@ description: 'Guide, workflow guide, 流程导航、我该用哪个 skill、下�
 - `$user-persona` 用于通过隔离虚拟用户 Agent 反馈或已有用户材料形成用户分群、强制 Persona、理想体验路径与功能路线图研究报告
 - `$competitive-analysis` 用于竞品选择、联网调研、功能或 AI 黑盒测试，以及证据化产品决策；执行前必须已有经 `$define-product` 确认的 `PRODUCT_DEFINITION`
 - `$document-publisher` 是所有门户内容的能力与工作流元 Skill：其他 Skill 在构建内容时用它选择已注册工具并直接写出最终格式，完成后再按其流程创建、导入、校验或更新；它内置 AntV Infographic 模板选择规范，但不负责把普通 Markdown 转换成富文档
+- 产品研究正式产物按 `docs/gainfactor/{product-slug}/{artifact-key}.mdx` 管理，统一生成门户位于 `.gainfactor/portal`；Guide 只识别这些源文件和 manifest 状态，不自行创建第二套目录规则
 - 产物 `PRODUCT_DEFINITION` 可被多个下游任务复用，但不是 BRD 和主流程的强制门禁
 - 产物 `USER_PERSONA` 是独立研究 artifact，可被 BRD、PRD、竞品分析和市场研究复用，不是主流程强制门禁
 - 产物 `COMPETITIVE_ANALYSIS` 是独立研究 artifact，可被 BRD、PRD、定位与路线图复用，不是主流程强制门禁

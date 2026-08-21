@@ -21,7 +21,7 @@
 
 每个用户画像包含：人物背景、典型情境、核心目标（JTBD）、关键行为与核心痛点、决策与信任关键、期望产品功能。研究过程与完整反馈保存在内部 research sidecar，不占用主报告阅读路径。
 
-报告直接使用门户已注册的通用能力：`Profile` 组织照片、资料和人物背景，`InfoGrid` 展示紧凑字段，`StructuredSteps` 还原行为路径，`ContentPanel` 说明功能机会，`GroupedBoard` 汇总共性与特殊问题并表达用户价值优先级。组件只负责呈现，业务含义和推导规则仍由本 Skill 定义。
+报告直接使用门户已注册的能力：`PersonaBrief` 组织人物章节导读，`FieldList` 展示紧凑字段，`Steps/Step` 还原行为路径，`Panel` 说明功能机会，`Board` 汇总共性与特殊问题并表达用户价值优先级。人物背景和后续分析保持为 `PersonaBrief` 之后的独立章节。
 
 ## 增量工作流
 

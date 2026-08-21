@@ -5,11 +5,11 @@
 ## Document Publisher 集成覆盖规则
 
 - 本参考现在是 `$document-publisher` 的内部能力，不是独立 Skill。
-- 构建门户文档时，“仅输出一个代码块”只约束 DSL 子步骤；生成后继续把语法嵌入最终 MDX 的 `<Infographic syntax={...} />`，不得提前结束整个文档任务。
+- 构建门户文档时，先生成 DSL，再按 [`infographic/index`](infographic/index.md) 的内联模板字符串示例嵌入最终 MDX；不得把 fenced 代码块当成图形，也不得提前结束整个文档任务。
 - 只有用户明确只索要 Infographic DSL 时，才把单个 fenced 代码块作为最终交付。
 - 不执行原官方 Skill 的独立 HTML 或 CDN 流程；门户渲染始终使用本地注册组件。
 
-本文件用于指导生成符合 AntV Infographic 语法规范的纯文本输出。
+本文件用于指导生成符合 AntV Infographic 语法规范的 DSL，并将其用于门户组件。
 
 ## Critical: Output Language Follows User Input
 
@@ -34,7 +34,7 @@
 ## 目标与输入输出
 
 - **输入**：用户的文字内容或需求描述
-- **输出**：仅包含 Infographic 语法的单个 fenced 代码块
+- **输出**：门户任务把 DSL 嵌入最终 `<Infographic syntax={...} />`；只有用户单独索要 DSL 时才输出 fenced 代码块
 - **职责边界**：本规范只负责生成语法，不负责生成 HTML 文件、React/TSX 组件或模板源码
 
 ## 语法结构
@@ -130,7 +130,7 @@ theme
   - `rough`：手绘效果
   - `pattern`：图案填充
   - `linear-gradient` / `radial-gradient`：渐变风格
-- 仅输出 Infographic 语法本身，不输出 JSON、解释性文字或额外 Markdown 段落
+- DSL 子步骤只生成 Infographic 语法本身，不混入 JSON 或解释性文字；门户任务随后继续完成组件嵌入
 
 ## 数据语法示例
 
@@ -418,11 +418,29 @@ data
 6. 为语义明确的主要数据项补充 `icon`；如果模板本身偏图标化，默认不要省略。
 7. 保持 `title`、`desc`、`label` 等文案与用户输入语言一致；仅在用户明确要求时做翻译或双语化。
 8. 用户指定风格、配色、字体时，再补充 `theme`。
-9. 输出单个代码块，内容只包含 Infographic 语法。
+9. 将 DSL 嵌入最终 MDX 的 `<Infographic syntax={...} />`；只有用户明确单独索要 DSL 时才输出 fenced 代码块。
 
 ## 输出格式
 
-只输出一个代码块，不添加任何解释性文字：
+门户文档使用内联模板字符串：
+
+```mdx
+<Infographic
+  syntax={`infographic list-row-horizontal-icon-arrow
+data
+  title 标题
+  desc 描述
+  lists
+    - label 条目
+      value 12.5
+      desc 说明
+      icon document text
+theme
+  palette #3b82f6 #8b5cf6 #f97316`}
+/>
+```
+
+只有用户单独索要 DSL 时，才交付一个不含解释文字的代码块：
 
 ```infographic
 infographic list-row-horizontal-icon-arrow

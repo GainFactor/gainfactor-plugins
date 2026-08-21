@@ -1,6 +1,6 @@
 interface:
-  display_name: "Prototype Reviewer"
-  short_description: "Review prototype alignment, isolation, and readiness"
+  display_name: "交互原型评审"
+  short_description: "评审原型的一致性、隔离性与交付准备度"
   icon_small: "./assets/gainfactor-pm-logo-small.png"
   icon_large: "./assets/gainfactor-pm-logo.png"
-  default_prompt: "Use $prototype-reviewer to review the prototype in this sandbox directory."
+  default_prompt: "使用 $prototype-reviewer 评审这个沙箱目录中的交互原型。"

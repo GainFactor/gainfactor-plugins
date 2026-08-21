@@ -182,19 +182,10 @@ nodes:
     command: $document-publisher
     optional_context:
       - USER_PERSONA: rich-supported
-    produces: PORTAL_DOCUMENT
+    produces: DOCUMENT_PORTAL
     show_when:
       - explicit_rich_portal_publish
       - portal_report_presentation_required
-    next: [document-review]
-
-  - id: document-review
-    lane: delivery
-    kind: publisher
-    command: $document-review
-    requires: [PORTAL_DOCUMENT]
-    produces: DOCUMENT_PORTAL
-    show_when:
       - explicit_document_preview
       - shared_review_portal_required
       - upstream_mandates_portal_delivery

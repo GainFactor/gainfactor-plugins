@@ -1,4 +1,6 @@
 interface:
-  display_name: "Product Metrics"
-  short_description: "Define north-star, process, and guardrail product metrics"
-  default_prompt: "Use $product-metrics to build a measurable product metric system from my product definition and publish it to the document portal."
+  display_name: "产品指标体系"
+  short_description: "定义北极星、过程与护栏指标并形成可衡量体系"
+  icon_small: "./assets/gainfactor-pm-logo-small.png"
+  icon_large: "./assets/gainfactor-pm-logo.png"
+  default_prompt: "使用 $product-metrics 基于产品定义构建可衡量的产品指标体系，并发布到文档门户。"

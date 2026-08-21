@@ -1,6 +1,6 @@
 interface:
-  display_name: "Guide"
-  short_description: "Scan project docs and recommend the next workflow skill"
+  display_name: "研发流程向导"
+  short_description: "扫描项目文档并推荐下一步工作流 Skill"
   icon_small: "./assets/gainfactor-pm-logo-small.png"
   icon_large: "./assets/gainfactor-pm-logo.png"
-  default_prompt: "Use $guide to scan this project, identify the current stage, and recommend the next most appropriate skill or downstream automation workflow."
+  default_prompt: "使用 $guide 扫描当前项目、识别所处阶段，并推荐下一步最合适的 Skill 或下游自动化工作流。"

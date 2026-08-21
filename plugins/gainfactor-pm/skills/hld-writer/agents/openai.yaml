@@ -1,6 +1,6 @@
 interface:
-  display_name: "HLD Writer"
-  short_description: "Draft high-level designs from approved requirements"
+  display_name: "HLD 编写"
+  short_description: "根据已批准需求编写高层设计"
   icon_small: "./assets/gainfactor-pm-logo-small.png"
   icon_large: "./assets/gainfactor-pm-logo.png"
-  default_prompt: "Use $hld-writer to draft an HLD from this PRD and API contract."
+  default_prompt: "使用 $hld-writer 根据这份 PRD 和 API 契约编写 HLD。"

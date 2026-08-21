@@ -1,4 +1,7 @@
 import Link from 'next/link';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = { title: 'GainFactor 文档中心' };
 
 export default function HomePage() {
   return (

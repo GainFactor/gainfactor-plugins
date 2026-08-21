@@ -8,19 +8,32 @@ type TocItem = { title: ReactNode; url: string; depth: number };
 
 export function ReviewNavigation({ toc }: { toc: TocItem[] }) {
   const [activeId, setActiveId] = useState('');
+  const [items, setItems] = useState(toc);
   useEffect(() => {
-    const headings = toc.map((item) => document.getElementById(item.url.replace(/^#/, ''))).filter((item): item is HTMLElement => Boolean(item));
+    const known = new Map(toc.map((item) => [item.url.replace(/^#/, ''), item]));
+    const nextItems = Array.from(document.querySelectorAll<HTMLElement>('.prd-document :is(h2,h3,h4,[data-toc-title][id])'))
+      .map((heading) => known.get(heading.id) ?? (heading.dataset.tocTitle ? {
+        title: heading.dataset.tocTitle,
+        url: `#${heading.id}`,
+        depth: Number(heading.dataset.tocDepth) || (heading.tagName === 'H2' ? 2 : heading.tagName === 'H4' ? 4 : 3),
+      } : undefined))
+      .filter((item): item is TocItem => item !== undefined && item.depth <= 4);
+    const frame = requestAnimationFrame(() => setItems(nextItems));
+    const headings = nextItems.map((item) => document.getElementById(item.url.replace(/^#/, ''))).filter((item): item is HTMLElement => Boolean(item));
     const observer = new IntersectionObserver((entries) => {
       const visible = entries.find((entry) => entry.isIntersecting);
       if (visible) setActiveId(visible.target.id);
     }, { rootMargin: '-15% 0px -75% 0px' });
     headings.forEach((heading) => observer.observe(heading));
-    return () => observer.disconnect();
+    return () => {
+      cancelAnimationFrame(frame);
+      observer.disconnect();
+    };
   }, [toc]);
 
   return <aside className="review-navigation" aria-label="本节目录">
     <h2><List aria-hidden="true" />本节目录</h2>
-    <nav className="review-toc">{toc.map((item) => <a key={item.url} href={item.url} data-depth={item.depth} data-active={activeId === item.url.replace(/^#/, '') || undefined}>{item.title}</a>)}</nav>
+    <nav className="review-toc">{items.map((item) => <a key={item.url} href={item.url} data-depth={item.depth} data-active={activeId === item.url.replace(/^#/, '') || undefined}>{item.title}</a>)}</nav>
   </aside>;
 }
 

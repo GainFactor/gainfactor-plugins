@@ -1,4 +1,6 @@
 interface:
-  display_name: "Portal Documents"
-  short_description: "Choose supported portal tools and follow document workflows"
-  default_prompt: "Use $document-publisher to choose supported document tools, author against the portal contract, and follow the correct create or update workflow."
+  display_name: "文档构建与发布"
+  short_description: "设计、验证、发布和预览 GainFactor 门户文档"
+  icon_small: "./assets/gainfactor-pm-logo-small.png"
+  icon_large: "./assets/gainfactor-pm-logo.png"
+  default_prompt: "使用 $document-publisher 按当前场景选择最小必要参考，完成门户文档设计、验证、导入、评审挂载、构建或预览。"

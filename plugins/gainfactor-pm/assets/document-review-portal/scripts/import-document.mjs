@@ -57,20 +57,32 @@ for (const match of imageMatches) {
   markdown = markdown.replace(match[0], `![${match[1]}](${portalUrl}${match[3] ?? ''})`);
 }
 
-const profilePattern = /<Profile\b[\s\S]*?>/g;
-const profileMatches = [...markdown.matchAll(profilePattern)];
-for (const profileMatch of profileMatches) {
-  const imageObject = profileMatch[0].match(/\bimage\s*=\s*\{\{([\s\S]*?)\}\}/);
+const personaBriefPattern = /<PersonaBrief\b[\s\S]*?>/g;
+const personaBriefMatches = [...markdown.matchAll(personaBriefPattern)];
+for (const personaBriefMatch of personaBriefMatches) {
+  const imageObject = personaBriefMatch[0].match(/\bimage\s*=\s*\{\{([\s\S]*?)\}\}/);
   if (!imageObject) continue;
   const source = imageObject[1].match(/\bsrc\s*:\s*(["'])([^"']+)\1/);
   const alt = imageObject[1].match(/\balt\s*:\s*(["'])([^"']*)\1/);
-  if (!source) throw new Error('Profile image must contain a string src field');
-  if (!alt?.[2].trim()) throw new Error('Profile image must contain a non-empty alt field');
+  if (!source) throw new Error('PersonaBrief image must contain a string src field');
+  if (!alt?.[2].trim()) throw new Error('PersonaBrief image must contain a non-empty alt field');
   const portalUrl = await importLocalImage(source[2]);
   if (portalUrl === source[2]) continue;
   const rewrittenImage = imageObject[0].replace(source[0], `src: ${source[1]}${portalUrl}${source[1]}`);
-  const rewrittenProfile = profileMatch[0].replace(imageObject[0], rewrittenImage);
-  markdown = markdown.replace(profileMatch[0], rewrittenProfile);
+  const rewrittenPersonaBrief = personaBriefMatch[0].replace(imageObject[0], rewrittenImage);
+  markdown = markdown.replace(personaBriefMatch[0], rewrittenPersonaBrief);
+}
+
+const imageComponentPattern = /<(?:Screenshot|ImageZoom)\b[\s\S]*?>/g;
+const imageComponentMatches = [...markdown.matchAll(imageComponentPattern)];
+for (const imageComponentMatch of imageComponentMatches) {
+  const component = imageComponentMatch[0].match(/^<([A-Za-z]+)/)?.[1] ?? 'Image component';
+  const source = imageComponentMatch[0].match(/\bsrc\s*=\s*(["'])([^"']+)\1/);
+  if (!source) throw new Error(`${component} must contain a string src field`);
+  const portalUrl = await importLocalImage(source[2]);
+  if (portalUrl === source[2]) continue;
+  const rewrittenComponent = imageComponentMatch[0].replace(source[0], `src=${source[1]}${portalUrl}${source[1]}`);
+  markdown = markdown.replace(imageComponentMatch[0], rewrittenComponent);
 }
 
 const contentStart = titleMatch?.index !== undefined

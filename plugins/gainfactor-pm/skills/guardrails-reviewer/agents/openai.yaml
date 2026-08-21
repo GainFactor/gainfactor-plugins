@@ -1,6 +1,6 @@
 interface:
-  display_name: "Guardrails Reviewer"
-  short_description: "Review guardrails as a project governance baseline"
+  display_name: "项目护栏评审"
+  short_description: "评审作为项目治理基线的 Guardrails"
   icon_small: "./assets/gainfactor-pm-logo-small.png"
   icon_large: "./assets/gainfactor-pm-logo.png"
-  default_prompt: "Use $guardrails-reviewer to review this Guardrails update, including trigger decision, fact standard, workflow hooks, and downstream impact."
+  default_prompt: "使用 $guardrails-reviewer 评审这次 Guardrails 更新，包括触发判断、事实标准、工作流钩子和下游影响。"

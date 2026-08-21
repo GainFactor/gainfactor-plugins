@@ -31,7 +31,7 @@ description: Build realistic behavior-based user personas, explain their concret
 2. 始终读取 [增量工作流与阶段门禁](references/incremental-workflow-and-gates.md)。
 3. 使用 Agent 收集反馈时读取 [虚拟用户探索与归纳协议](references/simulation-and-synthesis.md)。
 4. 形成单个画像时读取 [用户画像结构](references/persona-schema.md)。
-5. 开始写门户文档前读取 [报告结构与质量门禁](references/report-structure-and-quality.md)，并调用 `$document-publisher` 读取其表达设计、能力和写入契约。
+5. 开始写门户文档前读取 [报告结构与质量门禁](references/report-structure-and-quality.md)，并调用 `$document-publisher` 按 Shortcut 进入 `authoring-workflow`，随后只读取实际使用的组件参考。
 6. 生成人物图片时读取 [Persona 人物图片生成](references/persona-image-generation.md)。
 7. 形成首屏视图和发布时读取 [门户呈现](references/portal-presentation.md)。
 8. 只有用户要求详细假设管理时读取 [假设审计](references/assumption-audit.md)。
@@ -47,10 +47,10 @@ description: Build realistic behavior-based user personas, explain their concret
 5. 无产品路径通过门禁后，逐项测试中性最小产品命题；不得根据回答临时补功能说服 Agent。
 6. 收齐反馈后比较使用背景、核心目标、期望结果、当前行为、痛点、决策与信任因素、产品前后变化和放弃路径，再选择目标用户；不足时减少画像，不凑数。
 7. 每个保留用户先通过画像内容门禁，再生成人物图片并组装最终人物档案；图片与文档表达门禁通过后立即写入模块二，然后处理下一个人物。
-8. 模块二使用已注册的 `Profile`、`InfoGrid`、`StructuredSteps` 和 `ContentPanel` 直接写最终阅读结构；不得退回图片、两列表格和连续长文的拼接方案。
-9. 所有画像完成后才归纳共性与特殊需求；先按解决的问题和服务能力归一化跨人物功能，保留人物来源与差异顾虑，再使用 `GroupedBoard` 按 P0、P1、P2、暂不纳入形成 `用户 × 功能优先级路线图`；需要精确核对人物与功能关系时另加 Markdown 矩阵。
+8. 模块二使用已注册的 `PersonaBrief`、`FieldList`、`Steps/Step` 和 `Panel` 直接写最终阅读结构；`PersonaBrief` 只承担人物章节导读，不包裹后续正文。每个人物必须作为一个连续内容块完整写入，当前人物的全部功能结束后才能开始下一个人物。
+9. 所有画像完成后才归纳共性与特殊需求；先按解决的问题和服务能力归一化跨人物功能，保留人物来源与差异顾虑，再使用 `Board` 按 P0、P1、P2、暂不纳入形成 `用户 × 功能优先级路线图`；需要精确核对人物与功能关系时另加 Markdown 矩阵。模块一概览、模块二人物块、模块三人物引用和 Presentation cards 必须沿用同一份人物顺序清单。
 10. 全部模块完成后进行一次整体内容、语言、推导、可视化和页面节奏优化；优化不得制造新结论。
-11. 生成并校验 `.portal.json`，再由 `$document-publisher` 按工作流交给 `$document-review` 挂载门户；发布器只校验和发布已经写好的最终内容，不二次推导语义。
+11. 生成并校验 `.portal.json`，再由 `$document-publisher` 挂载、构建并验证门户；发布阶段只校验和发布已经写好的最终内容，不二次推导语义。
 
 ## 独立 Agent 纪律
 
@@ -66,6 +66,7 @@ description: Build realistic behavior-based user personas, explain their concret
 - 每个正式板块写入前必须确定阅读价值、内容结构、组件映射和 Markdown 降级；没有明确阅读收益时保留正文，不用组件制造视觉丰富感。
 - 门禁失败时只补充或重做失败部分，不推翻已经通过且不受影响的阶段。
 - 单个用户画像逐个检查、逐个写入；不得等待全部人物完成后统一补写，也不得先生成图片或功能再反向补人物。
+- 每次追加或移动人物内容后检查人物块边界：从当前人物三级标题与 `PersonaBrief` 开始，到下一个人物标题或模块三开始之前，只能出现当前人物的情境、目标、行为、痛点、决策和功能；发现其他人物姓名、persona_id、图片 alt 或功能来源时立即停止并修正。
 - 结构校验器只检查确定性格式；真实性、代表性、推导完整性和表达质量必须按参考文件进行语义检查。
 
 ## 默认交付
@@ -73,15 +74,15 @@ description: Build realistic behavior-based user personas, explain their concret
 面向读者的正式产物：
 
 ```text
-docs/User-Persona-{产品名}-{YYYYMMDD}.mdx
-docs/User-Persona-{产品名}-{YYYYMMDD}.portal.json
-docs/assets/user-persona/{product-slug}/*.png
+docs/gainfactor/{product-slug}/user-persona.mdx
+docs/gainfactor/{product-slug}/user-persona.portal.json
+docs/gainfactor/{product-slug}/assets/user-persona/*.png
 ```
 
 内部工作产物建议使用：
 
 ```text
-docs/.user-persona-work/{product-slug}.research.json
+docs/gainfactor/{product-slug}/.work/user-persona.research.json
 ```
 
 research sidecar 保存人物设定、原始反馈、合并记录、功能来源和阶段门禁状态，不导入门户。正式 `.mdx` 必须脱离门户也能完整阅读；只允许使用 `$document-publisher` 能力注册表中已注册的 Markdown、MDX 组件和图形 DSL，不写任意 HTML、脚本、内联样式或未注册组件。
@@ -94,19 +95,15 @@ research sidecar 保存人物设定、原始反馈、合并记录、功能来源
 
 研究与图片通过门禁后，默认把最终报告、图片和呈现清单写入项目并自动导入文档门户，不询问是否保存或是否导入。用户明确要求仅在对话中输出、不要写文件、不要导入门户或指定其他交付方式时再缩减交付。自动导入不等于自动启动服务；只有用户要求预览、打开或启动时才启动门户。
 
-默认发布命令：
+稳定发布身份：
 
-```bash
-python3 <gainfactor-pm-plugin-root>/scripts/create_document_portal.py \
-  <User-Persona.mdx> <portal-directory> \
-  --slug=<stable-slug> \
-  --type=User-Persona \
-  --presentation=<User-Persona.portal.json> --rich \
-  --collection=产品研究 \
-  --version=<版本> --status=<状态> --owner=<负责人> --updated=<YYYY-MM-DD>
+```text
+source: docs/gainfactor/{product-slug}/user-persona.mdx
+presentation: docs/gainfactor/{product-slug}/user-persona.portal.json
+artifact: user-persona
 ```
 
-已知当前任务正在使用某个 GainFactor 门户时追加到该门户；否则由 `$document-review` 按其默认规则创建独立临时门户，不把临时门户称为公共门户，也不为选择门户重复询问。未提供发布元信息时使用 `version=1.0`、`status=draft`、`owner=unassigned` 和当前日期；已有项目约定时优先沿用。导入后校验源 MDX、图片、导入结果、门户资产、presentation 和清单；失败时说明具体阻塞并保留已成功写入的源产物。
+调用 `$document-publisher` 的 `artifact-management` 和 `publishing/publish` 完成身份解析与发布，不在本 Skill 拼接 target、group、collection 或 route。默认写入工作区 `.gainfactor/portal`；用户显式指定兼容门户时沿用该 target。未提供发布元信息时使用 `version=1.0`、`status=draft`、`owner=unassigned` 和当前日期；已有项目约定时优先沿用。导入后校验源 MDX、图片、导入结果、门户资产、presentation 和清单；失败时说明具体阻塞并保留已成功写入的源产物。
 
 ## 下游复用契约
 

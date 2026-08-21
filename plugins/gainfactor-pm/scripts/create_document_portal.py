@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -23,6 +24,7 @@ GROUPS = {
             "PRODUCT-DEFINITION",
             "USER-PERSONA",
             "COMPETITIVE-ANALYSIS",
+            "PRODUCT-METRICS",
             "BRD",
             "PRD",
             "USER-JOURNEY",
@@ -35,11 +37,33 @@ GROUPS = {
     },
     "other": {"title": "其他文档", "types": set()},
 }
+ARTIFACTS = {
+    "product-definition": {"routeSuffix": "product-definition", "documentType": "Product-Definition"},
+    "user-persona": {"routeSuffix": "user-persona", "documentType": "User-Persona"},
+    "competitive-analysis": {"routeSuffix": "competitive-analysis", "documentType": "Competitive-Analysis"},
+    "product-metrics": {"routeSuffix": "metrics", "documentType": "Product-Metrics"},
+}
 
 
 def default_slug(path: Path) -> str:
     slug = re.sub(r"[^a-z0-9]+", "-", path.stem.lower()).strip("-")
     return slug or "document"
+
+
+def infer_workspace_root(document: Path, explicit_target: Path | None) -> Path:
+    for candidate in (document.parent, *document.parents):
+        docs_root = candidate / "docs/gainfactor"
+        if docs_root.is_dir() and document.is_relative_to(docs_root):
+            return candidate
+        if (candidate / ".git").exists():
+            return candidate
+    if explicit_target is not None:
+        return Path(os.path.commonpath((document.parent, explicit_target.parent))).resolve()
+    return Path.cwd().resolve()
+
+
+def workspace_relative(path: Path, workspace_root: Path) -> str:
+    return Path(os.path.relpath(path, workspace_root)).as_posix()
 
 
 def load_manifest(target: Path) -> dict:
@@ -63,12 +87,19 @@ def default_group(document_type: str) -> str:
 def write_navigation(target: Path, manifest: dict) -> None:
     docs_root = target / "content/docs"
     active_groups: dict[str, list[str]] = {}
+    group_titles: dict[str, str] = {}
     for route, document in manifest["documents"].items():
         group = document["group"]
         active_groups.setdefault(group, []).append(Path(route).name)
+        group_titles.setdefault(
+            group,
+            document.get("groupTitle") or GROUPS.get(group, {}).get("title") or group,
+        )
 
     root_pages = ["index"]
-    for group in GROUPS:
+    ordered_groups = [group for group in GROUPS if group in active_groups]
+    ordered_groups.extend(group for group in active_groups if group not in GROUPS)
+    for group in ordered_groups:
         pages = active_groups.get(group)
         if not pages:
             continue
@@ -77,7 +108,7 @@ def write_navigation(target: Path, manifest: dict) -> None:
         group_root.mkdir(parents=True, exist_ok=True)
         (group_root / "meta.json").write_text(
             json.dumps(
-                {"title": GROUPS[group]["title"], "pages": pages},
+                {"title": group_titles[group], "pages": pages},
                 ensure_ascii=False,
                 indent=2,
             ) + "\n",
@@ -123,11 +154,16 @@ def install_launchers(target: Path) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("document", type=Path, help="Markdown or MDX document")
-    parser.add_argument("target", type=Path, help="Portal output directory")
+    parser.add_argument("target", type=Path, nargs="?", help="Portal output directory; defaults to .gainfactor/portal")
     parser.add_argument("--slug", default="", help="Stable URL slug inside the portal")
-    parser.add_argument("--type", dest="document_type", default="文档")
-    parser.add_argument("--collection", default="产品文档")
-    parser.add_argument("--group", choices=GROUPS, help="Optional navigation group override")
+    parser.add_argument("--type", dest="document_type", default="")
+    parser.add_argument("--collection", default="")
+    parser.add_argument("--group", default="", help="Optional navigation group slug")
+    parser.add_argument("--group-title", default="", help="Visible title for a custom navigation group")
+    parser.add_argument("--subject-slug", default="", help="Stable product or project slug")
+    parser.add_argument("--subject-title", default="", help="Visible product or project title")
+    parser.add_argument("--artifact", default="", help="Standard artifact key")
+    parser.add_argument("--dry-run", action="store_true", help="Resolve paths and identity without writing")
     parser.add_argument("--version", default="")
     parser.add_argument("--status", default="待评审")
     parser.add_argument("--owner", default="未指定")
@@ -140,35 +176,81 @@ def main() -> int:
         parser.error("--rich requires --presentation=<portal-presentation.json>")
 
     document = args.document.resolve()
-    target = args.target.resolve()
-    slug = args.slug.strip("/") or default_slug(document)
+    explicit_target = args.target.resolve() if args.target else None
+    workspace_root = infer_workspace_root(document, explicit_target)
+    target = explicit_target or workspace_root / ".gainfactor/portal"
+    subject_slug = args.subject_slug.strip("/")
+    subject_title = args.subject_title.strip()
+    artifact_key = args.artifact.strip()
+    standard_identity = any((subject_slug, subject_title, artifact_key))
+    if standard_identity and not all((subject_slug, subject_title, artifact_key)):
+        parser.error("--subject-slug, --subject-title, and --artifact must be provided together")
+    if artifact_key and artifact_key not in ARTIFACTS:
+        parser.error(f"Unsupported --artifact: {artifact_key}")
+    artifact = ARTIFACTS.get(artifact_key)
+    derived_slug = f"{subject_slug}-{artifact['routeSuffix']}" if artifact else ""
+    slug = args.slug.strip("/") or derived_slug or default_slug(document)
+    requested_group = args.group.strip("/") or subject_slug
+    document_type = args.document_type or (artifact["documentType"] if artifact else "文档")
+    collection = args.collection or subject_title or "产品文档"
     if not document.is_file():
         parser.error(f"Document does not exist: {document}")
+    if subject_slug and not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", subject_slug):
+        parser.error("Subject slug must contain lowercase letters, digits, and hyphens")
     if not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", slug):
         parser.error("Slug must contain lowercase letters, digits, and hyphens")
+    if requested_group and not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", requested_group):
+        parser.error("Group must contain lowercase letters, digits, and hyphens")
 
-    if not target.exists() or not any(target.iterdir()):
+    target_has_files = target.exists() and any(target.iterdir())
+    if target_has_files and not (target / MANIFEST_NAME).is_file():
+        parser.error(f"Target is not a GainFactor document portal: {target}")
+
+    manifest = load_manifest(target) if (target / MANIFEST_NAME).is_file() else {"documents": {}}
+    existing_route = next(
+        (
+            route
+            for route, value in manifest["documents"].items()
+            if value.get("sourceSlug") == slug or Path(route).name == slug
+        ),
+        None,
+    )
+    existing_document = manifest["documents"].get(existing_route, {})
+    group = existing_document.get("group") or requested_group or default_group(document_type)
+    group_title = (
+        existing_document.get("groupTitle")
+        or args.group_title.strip()
+        or subject_title
+        or GROUPS.get(group, {}).get("title")
+    )
+    if not group_title:
+        parser.error("A custom --group requires --group-title")
+    route = existing_route or f"{group}/{slug}"
+    source_path = workspace_relative(document, workspace_root)
+    tracked_source = existing_document.get("sourcePath")
+    if tracked_source and tracked_source != source_path:
+        parser.error(f"Route {route} already belongs to source {tracked_source}")
+
+    if args.dry_run:
+        print(json.dumps({
+            "source": str(document),
+            "sourcePath": source_path,
+            "target": str(target),
+            "group": group,
+            "groupTitle": group_title,
+            "route": route,
+            "artifactKey": artifact_key or existing_document.get("artifactKey") or "",
+            "action": "update" if existing_route else "create",
+        }, ensure_ascii=False, indent=2))
+        return 0
+
+    if not target.exists() or not target_has_files:
         shutil.copytree(
             TEMPLATE_ROOT,
             target,
             dirs_exist_ok=True,
             ignore=shutil.ignore_patterns("node_modules", ".next", ".source", "out", "*.tsbuildinfo"),
         )
-    elif not (target / MANIFEST_NAME).is_file():
-        parser.error(f"Target is not a GainFactor document portal: {target}")
-
-    manifest = load_manifest(target)
-    existing_route = next(
-        (
-            route
-            for route, value in manifest["documents"].items()
-            if value.get("sourceSlug") == slug or route == slug
-        ),
-        None,
-    )
-    existing_document = manifest["documents"].get(existing_route, {})
-    group = existing_document.get("group") or args.group or default_group(args.document_type)
-    route = existing_route or f"{group}/{slug}"
     if existing_route and "/" not in existing_route:
         route = f"{group}/{slug}"
         legacy_path = target / f"content/docs/{existing_route}.mdx"
@@ -195,12 +277,9 @@ def main() -> int:
         compile_command.append(f"--presentation={args.presentation.resolve()}")
     if args.rich:
         compile_command.append("--validate")
-    compiled = subprocess.run(
-        compile_command,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
+    compiled = subprocess.run(compile_command, capture_output=True, text=True)
+    if compiled.returncode != 0:
+        parser.error(compiled.stderr.strip() or compiled.stdout.strip() or "Portal document validation failed")
     presentation_payload = json.loads(compiled.stdout)
 
     review = {"conclusion": "尚未生成评审结果", "issues": []}
@@ -221,8 +300,11 @@ def main() -> int:
     manifest["documents"][route] = {
         "sourceSlug": slug,
         "group": group,
-        "documentType": args.document_type,
-        "collection": args.collection,
+        "groupTitle": group_title,
+        "artifactKey": artifact_key or existing_document.get("artifactKey") or "",
+        "sourcePath": source_path,
+        "documentType": document_type,
+        "collection": collection,
         "version": args.version or "—",
         "status": args.status,
         "owner": args.owner,
@@ -232,7 +314,7 @@ def main() -> int:
     }
     write_portal_data(target, manifest)
     install_launchers(target)
-    print(f"Added {args.document_type} document at /docs/{route}: {target}")
+    print(f"Added {document_type} document at /docs/{route}: {target}")
     return 0
 
 

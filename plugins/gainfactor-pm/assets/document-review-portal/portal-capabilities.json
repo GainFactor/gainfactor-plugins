@@ -1,24 +1,45 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
+  "visualFoundation": {
+    "shell": "fumadocs-notebook",
+    "visualGrammar": "nextra-content-first",
+    "primitiveLibrary": "@radix-ui/themes",
+    "version": "3.3.0",
+    "preset": "orange-slate-medium-100-solid"
+  },
   "contentTools": [
     { "id": "markdown", "component": null, "origin": "markdown", "status": "registered" },
     { "id": "code", "component": "CodeBlock", "origin": "fumadocs", "status": "registered" },
     { "id": "cards", "component": "Cards", "origin": "fumadocs", "status": "registered" },
-    { "id": "callout", "component": "Callout", "origin": "fumadocs", "status": "registered" },
+    { "id": "callout", "component": "Callout", "origin": "fumadocs-radix", "status": "registered" },
     { "id": "tabs", "component": "Tabs", "origin": "fumadocs", "status": "registered" },
     { "id": "steps", "component": "Steps", "origin": "fumadocs", "status": "registered" },
     { "id": "files", "component": "Files", "origin": "fumadocs", "status": "registered" },
     { "id": "type-table", "component": "TypeTable", "origin": "fumadocs", "status": "registered" },
     { "id": "image-zoom", "component": "ImageZoom", "origin": "fumadocs", "status": "registered" },
-    { "id": "lucide-icon", "component": "Icon", "origin": "lucide", "status": "registered", "version": "1.31.0", "coverage": "all", "network": "local-only" },
-    { "id": "profile", "component": "Profile", "origin": "gainfactor", "status": "registered", "fallback": "image-heading-table-tags-prose" },
-    { "id": "info-grid", "component": "InfoGrid", "origin": "gainfactor", "status": "registered", "fallback": "table-or-definition-list" },
-    { "id": "structured-steps", "component": "StructuredSteps", "origin": "gainfactor", "status": "registered", "fallback": "numbered-headings-and-field-lists" },
-    { "id": "content-panel", "component": "ContentPanel", "origin": "gainfactor", "status": "registered", "fallback": "heading-fields-prose-blockquote" },
-    { "id": "grouped-board", "component": "GroupedBoard", "origin": "gainfactor", "status": "registered", "fallback": "group-headings-and-item-lists" },
-    { "id": "mermaid", "component": "Mermaid", "origin": "official-integration", "status": "registered" },
-    { "id": "antv-infographic", "component": "Infographic", "origin": "antv", "status": "registered", "version": "0.2.20", "network": "local-only" },
-    { "id": "node-graph", "component": "NodeGraph", "origin": "gainfactor", "status": "registered" }
+    { "id": "lucide-icon", "component": "Icon", "origin": "lucide", "status": "registered", "version": "1.31.0", "network": "local-only", "coverage": "all" },
+    { "id": "persona-brief", "component": "PersonaBrief", "origin": "gainfactor", "status": "registered", "fallback": "image-identity-situation-traits-facts", "props": { "required": ["name"], "optional": ["identity", "situation", "priority", "image", "traits", "facts"] } },
+    { "id": "field-list", "component": "FieldList", "origin": "gainfactor", "status": "registered", "fallback": "definition-list", "props": { "required": ["items"], "optional": ["columns", "variant"], "enums": { "columns": [1, 2, 3, 4, "auto"], "variant": ["plain", "grid"], "items[].span": [1, 2, "full"] } } },
+    { "id": "panel", "component": "Panel", "origin": "gainfactor", "status": "registered", "fallback": "heading-and-prose", "props": { "required": ["title"], "optional": ["id", "icon", "eyebrow", "description", "children"] } },
+    { "id": "board", "component": "Board", "origin": "gainfactor", "status": "registered", "fallback": "group-headings-and-content", "props": { "required": ["groups"], "optional": ["label", "columns"], "enums": { "columns": [1, 2, 3, "auto"], "groups[].tone": ["neutral", "info", "warning", "critical"] } } },
+    { "id": "section-heading", "component": "SectionHeading", "origin": "gainfactor", "status": "registered", "fallback": "markdown-heading", "props": { "required": ["title"], "optional": ["level", "icon", "id"], "enums": { "level": [2, 3, 4] } } },
+    { "id": "citation", "component": "Citation", "origin": "gainfactor", "status": "registered", "fallback": "anchor-link", "props": { "required": ["source"], "optional": ["children"] } },
+    { "id": "source", "component": "Source", "origin": "gainfactor", "status": "registered", "fallback": "ordered-list-item", "props": { "required": ["id", "children"], "optional": [] } },
+    { "id": "source-index", "component": "SourceIndex", "origin": "gainfactor", "status": "registered", "fallback": "ordered-list", "props": { "required": ["children"], "optional": ["label"] } },
+    { "id": "mermaid", "component": "Mermaid", "origin": "official-integration", "status": "registered", "network": "local-only" },
+    { "id": "antv-infographic", "component": "Infographic", "origin": "antv", "status": "registered", "version": "0.2.20", "network": "local-only", "props": { "required": ["syntax"], "optional": ["caption"] } },
+    { "id": "screenshot", "component": "Screenshot", "origin": "gainfactor", "status": "registered", "fallback": "bounded-image-and-caption", "props": { "required": ["src"], "optional": ["title", "caption", "evidenceId", "device", "step", "maxHeight"], "enums": { "device": ["desktop", "tablet", "mobile"] } } },
+    { "id": "screenshot-gallery", "component": "ScreenshotGallery", "origin": "gainfactor", "status": "registered", "fallback": "responsive-image-list", "props": { "required": ["children"], "optional": ["columns", "layout"], "enums": { "columns": [1, 2, 3], "layout": ["grid", "rail"] } } },
+    { "id": "evidence-step", "component": "EvidenceStep", "origin": "gainfactor", "status": "registered", "fallback": "step-heading-prose-and-image", "props": { "required": ["step", "title"], "optional": ["id", "children", "evidence"] } }
   ],
+  "removedComponents": {
+    "Profile": "PersonaBrief for user-persona introductions, or Panel and FieldList for non-person entities",
+    "InfoGrid": "FieldList",
+    "ContentPanel": "Panel with FieldList or Callout children",
+    "GroupedBoard": "Board",
+    "StructuredSteps": "Fumadocs Steps/Step with optional FieldList",
+    "JourneyStep": "EvidenceStep",
+    "NodeGraph": "Mermaid"
+  },
   "presentationModules": ["metrics", "cards", "steps", "callout"]
 }

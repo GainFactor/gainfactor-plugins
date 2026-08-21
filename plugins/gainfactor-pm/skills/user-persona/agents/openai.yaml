@@ -1,6 +1,6 @@
 interface:
-  display_name: "User Persona"
-  short_description: "Build realistic personas and user-led feature priorities"
+  display_name: "用户画像研究"
+  short_description: "构建真实用户画像与用户反馈驱动的功能优先级"
   icon_small: "./assets/gainfactor-pm-logo-small.png"
   icon_large: "./assets/gainfactor-pm-logo.png"
-  default_prompt: "Use $user-persona to build realistic user profiles from concrete behavior, write each validated profile incrementally, and publish a visual user-to-feature priority report."
+  default_prompt: "使用 $user-persona 基于具体行为构建真实用户画像，逐个写入已验证画像，并发布用户到功能优先级的可视化报告。"
