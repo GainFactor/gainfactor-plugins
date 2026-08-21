@@ -1,6 +1,6 @@
 interface:
-  display_name: "Test Reviewer"
-  short_description: "Review test packages, evidence, and release test gates"
+  display_name: "测试结果评审"
+  short_description: "评审测试包、测试证据与发布测试门禁"
   icon_small: "./assets/gainfactor-pm-logo-small.png"
   icon_large: "./assets/gainfactor-pm-logo.png"
-  default_prompt: "Use $test-reviewer to review this test package for coverage, evidence, and release test readiness."
+  default_prompt: "使用 $test-reviewer 评审这个测试包的覆盖度、证据和发布测试准备度。"

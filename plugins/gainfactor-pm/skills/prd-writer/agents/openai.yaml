@@ -1,6 +1,6 @@
 interface:
-  display_name: "PRD Writer"
-  short_description: "Draft PRDs from business requirements and journeys"
+  display_name: "PRD 编写"
+  short_description: "根据业务需求与用户旅程编写产品需求文档"
   icon_small: "./assets/gainfactor-pm-logo-small.png"
   icon_large: "./assets/gainfactor-pm-logo.png"
-  default_prompt: "Use $prd-writer to draft a PRD from this BRD and user journey."
+  default_prompt: "使用 $prd-writer 根据这份 BRD 和用户旅程编写 PRD。"

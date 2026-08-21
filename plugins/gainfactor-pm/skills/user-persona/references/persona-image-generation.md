@@ -48,30 +48,30 @@ Avoid: 影棚证件照、广告摆拍、过度磨皮、夸张表情、刻板职�
 
 ```text
 docs/
-├── User-Persona-{产品名}-{YYYYMMDD}.mdx
-└── assets/
-    └── user-persona/
-        └── {product-slug}/
+└── gainfactor/
+    └── {product-slug}/
+        ├── user-persona.mdx
+        └── assets/user-persona/
             ├── {persona-slug}.png
             └── {persona-slug-2}.png
 ```
 
 - `product-slug` 和 `persona-slug` 只使用小写字母、数字和连字符；同一人物重新生成且未明确要求替换时使用 `-v2` 等版本后缀。
-- 报告在 `Profile.image` 中使用项目相对路径，例如：
+- 报告在 `PersonaBrief.image` 中使用项目相对路径，例如：
 
 ```mdx
-<Profile
+<PersonaBrief
   name="周敏"
+  identity="当前任务的信息核验者"
+  situation="需要在有限时间内核验重要信息。"
   image={{
     src: "assets/user-persona/example-product/zhou-min.png",
     alt: "周敏，正在为当前任务核验重要信息"
   }}
->
-  人物背景正文。
-</Profile>
+/>
 ```
 
-- 图片是对应人物 `Profile` 的组成部分，不在组件前后重复插入 Markdown 图片。
+- 图片是对应人物 `PersonaBrief` 的组成部分，不在组件前后重复插入 Markdown 图片。
 - alt 文本包含人物姓名和可观察的使用背景，不能写“用户图片”、抽象画像标签或留空。
-- 同一报告内每个人物图片使用唯一 alt；首屏人物卡的 `sourceImageAlt` 与对应 `Profile.image.alt` 完全一致。
-- 导入文档门户时，生成器会复制 `Profile.image.src` 指向的本地图片并重写为门户资产路径。图片缺失时应让导入失败，避免发布破图报告。
+- 同一报告内每个人物图片使用唯一 alt；首屏人物卡的 `sourceImageAlt` 与对应 `PersonaBrief.image.alt` 完全一致。
+- 导入文档门户时，生成器会复制 `PersonaBrief.image.src` 指向的本地图片并重写为门户资产路径。图片缺失时应让导入失败。

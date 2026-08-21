@@ -7,8 +7,9 @@ import {
   registerResourceLoader,
   setDefaultFont,
 } from '@antv/infographic';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import dynamicIconImports from 'lucide-react/dynamicIconImports';
+import { FigureFrame } from './figure-frame';
 
 type IconName = keyof typeof dynamicIconImports;
 
@@ -48,31 +49,125 @@ registerResourceLoader(async ({ data }) => loadLucideIcon(data));
 
 export function Infographic({ syntax, caption }: { syntax: string; caption?: string }) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [error, setError] = useState<string>();
+  const [rendered, setRendered] = useState(false);
+  const templateFamily = syntax.match(/^infographic\s+([a-z0-9]+)-/)?.[1] ?? 'unknown';
 
   useEffect(() => {
-    if (!containerRef.current) return;
-    containerRef.current.classList.remove('antv-infographic-error');
-    containerRef.current.replaceChildren();
-    const infographic = new AntVInfographic({
-      container: containerRef.current,
-      width: '100%',
-      height: '100%',
-      editable: false,
+    const container = containerRef.current;
+    if (!container) return;
+    let infographic: AntVInfographic | undefined;
+    let cancelled = false;
+    let scheduleFrame = 0;
+    let renderGeneration = 0;
+    const layoutFrames = new Set<number>();
+    let lastSize = '';
+
+    const fail = (reason: unknown, generation: number, instance?: AntVInfographic) => {
+      if (cancelled || generation !== renderGeneration) return;
+      instance?.destroy();
+      if (infographic === instance) infographic = undefined;
+      container.replaceChildren();
+      container.dataset.rendered = 'false';
+      setRendered(false);
+      setError(reason instanceof Error ? reason.message : '图形未生成有效内容');
+    };
+
+    const waitForLayout = (generation: number) => new Promise<DOMRect | null>((resolve) => {
+      const measure = () => {
+        if (cancelled || generation !== renderGeneration) {
+          resolve(null);
+          return;
+        }
+        const bounds = container.getBoundingClientRect();
+        if (bounds.width > 1 && bounds.height > 1) resolve(bounds);
+        else {
+          const frame = requestAnimationFrame(() => {
+            layoutFrames.delete(frame);
+            measure();
+          });
+          layoutFrames.add(frame);
+        }
+      };
+      measure();
     });
-    try {
-      if (/(?:https?:\/\/|ref:(?:url|remote|search):)/i.test(syntax)) {
-        throw new Error('Remote Infographic resources are disabled in the document portal');
+
+    const render = async (generation: number) => {
+      let instance: AntVInfographic | undefined;
+      try {
+        if (/(?:https?:\/\/|ref:(?:url|remote|search):)/i.test(syntax)) {
+          throw new Error('文档门户已禁用远程 Infographic 资源');
+        }
+        const bounds = await waitForLayout(generation);
+        if (!bounds || cancelled || generation !== renderGeneration) return;
+        const styles = getComputedStyle(document.documentElement);
+        const token = (name: string) => styles.getPropertyValue(name).trim();
+        const themedSyntax = `${syntax.trim()}\n\ntheme\n  colorPrimary ${token('--doc-chart-1')}\n  colorBg ${token('--color-fd-background')}\n  palette ${[
+          '--doc-chart-1',
+          '--doc-chart-2',
+          '--doc-chart-3',
+          '--doc-chart-4',
+          '--doc-chart-5',
+          '--doc-chart-6',
+        ].map(token).join(' ')}`;
+        infographic?.destroy();
+        container.replaceChildren();
+        setError(undefined);
+        setRendered(false);
+        instance = new AntVInfographic({
+          container,
+          width: Math.floor(bounds.width),
+          height: '100%',
+          editable: false,
+        });
+        infographic = instance;
+        instance.on('error', (reason) => fail(reason, generation, instance));
+        await Promise.resolve(instance.render(themedSyntax));
+        await new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+        if (cancelled || generation !== renderGeneration || infographic !== instance) return;
+        const surface = container.querySelector<SVGSVGElement | HTMLCanvasElement>('svg, canvas');
+        const surfaceBounds = surface?.getBoundingClientRect();
+        const hasGraphics = surface instanceof HTMLCanvasElement
+          ? surface.width > 0 && surface.height > 0
+          : Boolean(surface?.querySelector('path, rect, circle, ellipse, line, polyline, polygon, text, image, use'));
+        if (!surface || !surfaceBounds || surfaceBounds.width <= 1 || surfaceBounds.height <= 1 || !hasGraphics) {
+          throw new Error('图形渲染为空，请检查模板语法与数据');
+        }
+        container.dataset.rendered = 'true';
+        setRendered(true);
+      } catch (reason) {
+        fail(reason, generation, instance);
       }
-      infographic.render(syntax);
-    } catch {
-      containerRef.current.classList.add('antv-infographic-error');
-      containerRef.current.textContent = syntax;
-    }
-    return () => infographic.destroy();
+    };
+
+    const scheduleRender = () => {
+      const generation = ++renderGeneration;
+      cancelAnimationFrame(scheduleFrame);
+      scheduleFrame = requestAnimationFrame(() => void render(generation));
+    };
+    const resizeObserver = new ResizeObserver(([entry]) => {
+      const nextSize = `${Math.round(entry.contentRect.width)}`;
+      if (lastSize && nextSize !== lastSize) scheduleRender();
+      lastSize = nextSize;
+    });
+    const themeObserver = new MutationObserver(scheduleRender);
+    resizeObserver.observe(container);
+    themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'data-theme', 'style'] });
+    scheduleRender();
+
+    return () => {
+      cancelled = true;
+      renderGeneration += 1;
+      cancelAnimationFrame(scheduleFrame);
+      for (const frame of layoutFrames) cancelAnimationFrame(frame);
+      layoutFrames.clear();
+      resizeObserver.disconnect();
+      themeObserver.disconnect();
+      infographic?.destroy();
+    };
   }, [syntax]);
 
-  return <figure className="antv-infographic">
-    <div ref={containerRef} className="antv-infographic-canvas" />
-    {caption ? <figcaption>{caption}</figcaption> : null}
-  </figure>;
+  return <FigureFrame className="antv-infographic" caption={caption} error={error ? <><strong>图形渲染失败</strong><span>{error}</span></> : null}>
+    <div ref={containerRef} className="antv-infographic-canvas" data-template-family={templateFamily} aria-busy={!rendered && !error} />
+  </FigureFrame>;
 }

@@ -1,4 +1,5 @@
 import { Provider } from '@/components/provider';
+import '@radix-ui/themes/styles.css';
 import './global.css';
 
 export default function Layout({ children }: LayoutProps<'/'>) {

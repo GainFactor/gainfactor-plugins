@@ -14,6 +14,185 @@ SCRIPT = Path(__file__).parent.parent / "create_document_portal.py"
 
 
 class CreateDocumentPortalTest(unittest.TestCase):
+    def test_standard_artifacts_share_the_default_product_portal(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            source_root = root / "docs/gainfactor/ctrip-wendao"
+            source_root.mkdir(parents=True)
+            artifacts = {
+                "product-definition": "ctrip-wendao-product-definition",
+                "user-persona": "ctrip-wendao-user-persona",
+                "competitive-analysis": "ctrip-wendao-competitive-analysis",
+                "product-metrics": "ctrip-wendao-metrics",
+            }
+
+            for artifact, route_slug in artifacts.items():
+                source = source_root / f"{artifact}.mdx"
+                source.write_text(f"# {artifact}\n\n正文。\n", encoding="utf-8")
+                subprocess.run([
+                    "python3", str(SCRIPT), str(source),
+                    "--subject-slug=ctrip-wendao", "--subject-title=携程问道",
+                    f"--artifact={artifact}",
+                ], cwd=root, check=True)
+                self.assertTrue(
+                    (root / f".gainfactor/portal/content/docs/ctrip-wendao/{route_slug}.mdx").is_file()
+                )
+
+            manifest = json.loads(
+                (root / ".gainfactor/portal/.gainfactor-documents.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual(
+                {f"ctrip-wendao/{route_slug}" for route_slug in artifacts.values()},
+                set(manifest["documents"]),
+            )
+            for artifact, route_slug in artifacts.items():
+                entry = manifest["documents"][f"ctrip-wendao/{route_slug}"]
+                self.assertEqual(artifact, entry["artifactKey"])
+                self.assertEqual(
+                    f"docs/gainfactor/ctrip-wendao/{artifact}.mdx",
+                    entry["sourcePath"],
+                )
+                self.assertEqual("携程问道", entry["collection"])
+            subprocess.run([
+                "python3", str(SCRIPT), str(source_root / "product-definition.mdx"),
+                "--subject-slug=ctrip-wendao", "--subject-title=携程问道",
+                "--artifact=product-definition", "--status=confirmed",
+            ], cwd=root, check=True)
+            manifest = json.loads(
+                (root / ".gainfactor/portal/.gainfactor-documents.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual(4, len(manifest["documents"]))
+            self.assertEqual(
+                {
+                    "title": "携程问道",
+                    "pages": list(artifacts.values()),
+                },
+                json.loads(
+                    (root / ".gainfactor/portal/content/docs/ctrip-wendao/meta.json").read_text(encoding="utf-8")
+                ),
+            )
+
+    def test_dry_run_reports_resolution_without_writing(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            source = root / "docs/gainfactor/example/product-definition.mdx"
+            source.parent.mkdir(parents=True)
+            source.write_text("# 产品定义\n", encoding="utf-8")
+
+            completed = subprocess.run([
+                "python3", str(SCRIPT), str(source),
+                "--subject-slug=example", "--subject-title=示例产品",
+                "--artifact=product-definition", "--dry-run",
+            ], cwd=root, check=True, capture_output=True, text=True)
+
+            resolution = json.loads(completed.stdout)
+            self.assertEqual("example/example-product-definition", resolution["route"])
+            self.assertEqual("create", resolution["action"])
+            self.assertEqual(str((root / ".gainfactor/portal").resolve()), resolution["target"])
+            self.assertFalse((root / ".gainfactor").exists())
+
+    def test_standard_artifact_requires_complete_subject_identity(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            source = root / "product-definition.mdx"
+            source.write_text("# 产品定义\n", encoding="utf-8")
+
+            completed = subprocess.run([
+                "python3", str(SCRIPT), str(source),
+                "--subject-slug=example", "--artifact=product-definition", "--dry-run",
+            ], cwd=root, capture_output=True, text=True)
+
+            self.assertEqual(2, completed.returncode)
+            self.assertIn("--subject-title", completed.stderr)
+            self.assertFalse((root / ".gainfactor").exists())
+
+    def test_rejects_invalid_subject_slug_without_writing(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            source = root / "product-definition.mdx"
+            source.write_text("# 产品定义\n", encoding="utf-8")
+            completed = subprocess.run([
+                "python3", str(SCRIPT), str(source),
+                "--subject-slug=Example Product", "--subject-title=示例产品",
+                "--artifact=product-definition", "--dry-run",
+            ], cwd=root, capture_output=True, text=True)
+            self.assertEqual(2, completed.returncode)
+            self.assertIn("Subject slug", completed.stderr)
+            self.assertFalse((root / ".gainfactor").exists())
+
+    def test_rejects_non_portal_default_target(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            source = root / "docs/gainfactor/example/product-definition.mdx"
+            source.parent.mkdir(parents=True)
+            source.write_text("# 产品定义\n", encoding="utf-8")
+            target = root / ".gainfactor/portal"
+            target.mkdir(parents=True)
+            sentinel = target / "do-not-overwrite.txt"
+            sentinel.write_text("preserve", encoding="utf-8")
+            completed = subprocess.run([
+                "python3", str(SCRIPT), str(source),
+                "--subject-slug=example", "--subject-title=示例产品",
+                "--artifact=product-definition",
+            ], cwd=root, capture_output=True, text=True)
+            self.assertEqual(2, completed.returncode)
+            self.assertIn("not a GainFactor document portal", completed.stderr)
+            self.assertEqual("preserve", sentinel.read_text(encoding="utf-8"))
+
+    def test_updates_legacy_entry_with_source_tracking(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            source = root / "docs/gainfactor/example/product-definition.mdx"
+            source.parent.mkdir(parents=True)
+            source.write_text("# 产品定义\n", encoding="utf-8")
+            target = root / "portal"
+
+            subprocess.run([
+                "python3", str(SCRIPT), str(source), str(target),
+                "--slug=example-product-definition", "--group=example",
+                "--group-title=示例产品", "--type=Product-Definition",
+            ], cwd=root, check=True)
+            manifest_path = target / ".gainfactor-documents.json"
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            entry = manifest["documents"]["example/example-product-definition"]
+            entry.pop("sourcePath", None)
+            entry.pop("artifactKey", None)
+            manifest_path.write_text(json.dumps(manifest, ensure_ascii=False), encoding="utf-8")
+
+            subprocess.run([
+                "python3", str(SCRIPT), str(source), str(target),
+                "--subject-slug=example", "--subject-title=示例产品",
+                "--artifact=product-definition",
+            ], cwd=root, check=True)
+
+            updated = json.loads(manifest_path.read_text(encoding="utf-8"))["documents"]
+            entry = updated["example/example-product-definition"]
+            self.assertEqual("product-definition", entry["artifactKey"])
+            self.assertEqual("docs/gainfactor/example/product-definition.mdx", entry["sourcePath"])
+
+    def test_rejects_standard_route_owned_by_a_different_source(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            first = root / "first.mdx"
+            second = root / "second.mdx"
+            first.write_text("# First\n", encoding="utf-8")
+            second.write_text("# Second\n", encoding="utf-8")
+            target = root / "portal"
+            subprocess.run([
+                "python3", str(SCRIPT), str(first), str(target),
+                "--slug=example-product-definition", "--group=example",
+                "--group-title=示例产品",
+            ], cwd=root, check=True)
+
+            completed = subprocess.run([
+                "python3", str(SCRIPT), str(second), str(target),
+                "--subject-slug=example", "--subject-title=示例产品",
+                "--artifact=product-definition",
+            ], cwd=root, capture_output=True, text=True)
+
+            self.assertEqual(2, completed.returncode)
+            self.assertIn("already belongs", completed.stderr)
+
     def test_imports_document_metadata_and_review(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
             root = Path(temporary_directory)
@@ -141,6 +320,57 @@ class CreateDocumentPortalTest(unittest.TestCase):
                 (target / "content/docs/product-requirements/product-definition.mdx").is_file()
             )
 
+    def test_supports_product_named_navigation_group(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            source = root / "product-definition.md"
+            target = root / "portal"
+            source.write_text("# 产品定义\n\n> Product: 携程问道\n", encoding="utf-8")
+
+            subprocess.run([
+                "python3", str(SCRIPT), str(source), str(target),
+                "--slug=ctrip-wendao-product-definition",
+                "--type=Product-Definition",
+                "--collection=携程问道",
+                "--group=ctrip-wendao",
+                "--group-title=携程问道",
+            ], check=True)
+
+            manifest = json.loads((target / ".gainfactor-documents.json").read_text(encoding="utf-8"))
+            route = "ctrip-wendao/ctrip-wendao-product-definition"
+            self.assertIn(route, manifest["documents"])
+            self.assertEqual("携程问道", manifest["documents"][route]["groupTitle"])
+            self.assertEqual("携程问道", manifest["documents"][route]["collection"])
+            self.assertEqual(
+                {"title": "携程问道", "pages": ["ctrip-wendao-product-definition"]},
+                json.loads((target / "content/docs/ctrip-wendao/meta.json").read_text(encoding="utf-8")),
+            )
+            generated = (target / f"content/docs/{route}.mdx").read_text(encoding="utf-8")
+            self.assertIn('title: "产品定义"', generated)
+
+            metrics = root / "product-metrics.md"
+            metrics.write_text("# 产品指标分析\n\n正文。\n", encoding="utf-8")
+            subprocess.run([
+                "python3", str(SCRIPT), str(metrics), str(target),
+                "--slug=ctrip-wendao-metrics",
+                "--type=Product-Metrics",
+                "--collection=携程问道",
+                "--group=ctrip-wendao",
+                "--group-title=携程问道",
+            ], check=True)
+
+            self.assertEqual(
+                {
+                    "title": "携程问道",
+                    "pages": ["ctrip-wendao-product-definition", "ctrip-wendao-metrics"],
+                },
+                json.loads((target / "content/docs/ctrip-wendao/meta.json").read_text(encoding="utf-8")),
+            )
+            generated_metrics = (
+                target / "content/docs/ctrip-wendao/ctrip-wendao-metrics.mdx"
+            ).read_text(encoding="utf-8")
+            self.assertIn('title: "产品指标分析"', generated_metrics)
+
     def test_groups_user_persona_with_product_requirements(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
             root = Path(temporary_directory)
@@ -191,7 +421,7 @@ class CreateDocumentPortalTest(unittest.TestCase):
             )
             self.assertEqual(b"persona-image", copied.read_bytes())
 
-    def test_copies_profile_component_image_and_rewrites_src(self) -> None:
+    def test_copies_persona_brief_component_image_and_rewrites_src(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
             root = Path(temporary_directory)
             source = root / "docs" / "profile.mdx"
@@ -202,7 +432,7 @@ class CreateDocumentPortalTest(unittest.TestCase):
             image.write_bytes(b"profile-image")
             source.write_text(
                 '# 主体档案\n\n'
-                '<Profile name="赵宁" image={{ src: "./assets/person.png", alt: "赵宁人物画像" }} '
+                '<PersonaBrief name="赵宁" image={{ src: "./assets/person.png", alt: "赵宁人物画像" }} '
                 'facts={[{ label: "地区", value: "成都" }]} />\n',
                 encoding="utf-8",
             )
@@ -230,21 +460,44 @@ class CreateDocumentPortalTest(unittest.TestCase):
             card = portal_manifest["documents"]["other/profile"]["presentation"]["modules"][0]["items"][0]
             self.assertEqual("/document-assets/other/profile/01-person.png", card["image"])
 
-    def test_rejects_profile_image_without_alt(self) -> None:
+    def test_rejects_persona_brief_image_without_alt(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
             root = Path(temporary_directory)
             source = root / "profile.mdx"
             image = root / "person.png"
             image.write_bytes(b"profile-image")
             source.write_text(
-                '# 主体档案\n\n<Profile name="赵宁" image={{ src: "./person.png" }} />\n',
+                '# 人物导读\n\n<PersonaBrief name="赵宁" image={{ src: "./person.png" }} />\n',
                 encoding="utf-8",
             )
             completed = subprocess.run([
                 "python3", str(SCRIPT), str(source), str(root / "portal"), "--slug=profile",
             ], capture_output=True, text=True)
             self.assertNotEqual(0, completed.returncode)
-            self.assertIn("Profile image must contain a non-empty alt field", completed.stderr)
+            self.assertIn("PersonaBrief image must contain a non-empty alt field", completed.stderr)
+
+    def test_copies_screenshot_component_image_and_rewrites_src(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            source = root / "docs" / "report.mdx"
+            image = root / "docs" / "assets" / "screen.png"
+            target = root / "portal"
+            image.parent.mkdir(parents=True)
+            image.write_bytes(b"screenshot-image")
+            source.write_text(
+                '# 产品报告\n\n<Screenshot src="./assets/screen.png" title="结果页" '
+                'caption="展示筛选结果。" evidenceId="E-S01" />\n',
+                encoding="utf-8",
+            )
+
+            subprocess.run([
+                "python3", str(SCRIPT), str(source), str(target), "--slug=report",
+            ], check=True)
+
+            generated = (target / "content/docs/other/report.mdx").read_text(encoding="utf-8")
+            copied = target / "public/document-assets/other/report/01-screen.png"
+            self.assertIn('src="/document-assets/other/report/01-screen.png"', generated)
+            self.assertEqual(b"screenshot-image", copied.read_bytes())
 
     def test_rich_document_adds_generic_presentation_data(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:

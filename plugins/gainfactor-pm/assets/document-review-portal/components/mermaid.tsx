@@ -3,6 +3,7 @@
 import { Expand, Minus, Plus, RotateCcw } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useEffect, useId, useRef, useState, type PointerEvent } from 'react';
+import { FigureFrame } from './figure-frame';
 
 const controls = [
   { icon: Minus, label: '缩小', delta: -0.1 },
@@ -49,6 +50,9 @@ export function Mermaid({ chart }: { chart: string }) {
           elkRegistered = true;
         }
 
+        const themeStyles = getComputedStyle(document.documentElement);
+        const themeToken = (name: string) => themeStyles.getPropertyValue(name).trim();
+
         const initialize = (layout: 'elk' | 'dagre') => mermaid.initialize({
           startOnLoad: false,
           securityLevel: 'strict',
@@ -59,17 +63,26 @@ export function Mermaid({ chart }: { chart: string }) {
               nodePlacementStrategy: 'LINEAR_SEGMENTS',
             },
           } : {}),
-          theme: resolvedTheme === 'dark' ? 'dark' : 'base',
+          theme: 'base',
           themeVariables: {
-            primaryColor: resolvedTheme === 'dark' ? '#1c2b41' : '#e9f2ff',
-            primaryTextColor: resolvedTheme === 'dark' ? '#f1f2f4' : '#172b4d',
-            primaryBorderColor: resolvedTheme === 'dark' ? '#579dff' : '#0c66e4',
-            lineColor: resolvedTheme === 'dark' ? '#9fadbc' : '#44546f',
-            secondaryColor: resolvedTheme === 'dark' ? '#22272b' : '#f7f8f9',
-            tertiaryColor: resolvedTheme === 'dark' ? '#161a1d' : '#ffffff',
-            fontFamily: 'var(--font-sans)',
+            darkMode: resolvedTheme === 'dark',
+            background: themeToken('--color-fd-background'),
+            primaryColor: themeToken('--doc-diagram-primary'),
+            primaryTextColor: themeToken('--doc-diagram-primary-text'),
+            primaryBorderColor: themeToken('--doc-diagram-primary-border'),
+            lineColor: themeToken('--doc-diagram-line'),
+            secondaryColor: themeToken('--doc-diagram-secondary'),
+            tertiaryColor: themeToken('--doc-diagram-tertiary'),
+            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", sans-serif',
+            fontSize: '14px',
           },
-          flowchart: { htmlLabels: true, curve: 'basis' },
+          themeCSS: `
+            .node rect, .node polygon, .node path { stroke-width: 1.25px; }
+            .node rect { rx: 6px; ry: 6px; }
+            .flowchart-link, .edgePath path { stroke-width: 1.25px; }
+            .edgeLabel { border-radius: 4px; }
+          `,
+          flowchart: { htmlLabels: true, curve: 'linear', nodeSpacing: 36, rankSpacing: 48 },
         });
 
         let result;
@@ -166,9 +179,8 @@ export function Mermaid({ chart }: { chart: string }) {
   };
 
   return (
-    <figure className="mermaid-frame" ref={containerRef}>
-      <figcaption>
-        <span>流程图</span>
+    <div ref={containerRef}>
+    <FigureFrame className="mermaid-frame" title="流程图" actions={
         <span className="mermaid-controls">
           {controls.map(({ icon: Icon, label, delta }) => (
             <button key={label} type="button" aria-label={label} onClick={() => changeScale(delta)}>
@@ -182,8 +194,7 @@ export function Mermaid({ chart }: { chart: string }) {
           <button type="button" aria-label="全屏查看" onClick={fullscreen}>
             <Expand aria-hidden="true" />
           </button>
-        </span>
-      </figcaption>
+        </span>}>
       <div
         className="mermaid-canvas"
         ref={canvasRef}
@@ -204,6 +215,7 @@ export function Mermaid({ chart }: { chart: string }) {
           <p>正在渲染流程图…</p>
         )}
       </div>
-    </figure>
+    </FigureFrame>
+    </div>
   );
 }

@@ -1,6 +1,6 @@
 interface:
-  display_name: "Runbook Writer"
-  short_description: "Draft runbooks for services and incidents"
+  display_name: "运行手册编写"
+  short_description: "为服务运维与事故处置编写 Runbook"
   icon_small: "./assets/gainfactor-pm-logo-small.png"
   icon_large: "./assets/gainfactor-pm-logo.png"
-  default_prompt: "Use $runbook-writer to draft an operations runbook for this service or incident."
+  default_prompt: "使用 $runbook-writer 为这个服务或事故场景编写运维 Runbook。"

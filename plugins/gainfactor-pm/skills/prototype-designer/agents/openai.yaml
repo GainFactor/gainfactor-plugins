@@ -1,6 +1,6 @@
 interface:
-  display_name: "Prototype Designer"
-  short_description: "Generate interactive UI prototypes from PRD and User Journey"
+  display_name: "交互原型设计"
+  short_description: "根据 PRD 与用户旅程生成可交互 UI 原型"
   icon_small: "./assets/gainfactor-pm-logo-small.png"
   icon_large: "./assets/gainfactor-pm-logo.png"
-  default_prompt: "Use $prototype-designer to create an interactive prototype in this frontend repo."
+  default_prompt: "使用 $prototype-designer 在当前前端仓库中创建可交互原型。"

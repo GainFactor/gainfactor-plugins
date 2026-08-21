@@ -21,7 +21,7 @@ class CompilePortalDocumentTest(unittest.TestCase):
             item["component"] for item in registry["contentTools"] if item["component"]
         }
         for component in registered_components:
-            self.assertRegex(mdx_context, rf"\b{component},")
+            self.assertRegex(mdx_context, rf"\b{component}(?:,|:)")
 
     def test_antv_infographic_is_version_locked_and_local_only(self) -> None:
         registry = json.loads((PORTAL_ROOT / "portal-capabilities.json").read_text(encoding="utf-8"))
@@ -35,6 +35,44 @@ class CompilePortalDocumentTest(unittest.TestCase):
         self.assertIn("registerResourceLoader", component)
         self.assertIn("font.fontWeight = {}", component)
         self.assertIn("ref:(?:url|remote|search)", component)
+        self.assertEqual(["syntax"], capability["props"]["required"])
+        self.assertIn("renderGeneration", component)
+
+    def test_accepts_static_multiline_infographic_syntax(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            document = Path(temporary_directory) / "doc.mdx"
+            document.write_text(
+                "<Infographic syntax={`infographic chart-bar-plain-text\n"
+                "  data\n    title 完成率\n    values\n      - label A\n        value 68`} />\n",
+                encoding="utf-8",
+            )
+            completed = subprocess.run(
+                ["python3", str(SCRIPT), str(document), "--validate"],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual([], json.loads(completed.stdout)["errors"])
+
+    def test_rejects_fenced_only_and_dynamic_infographic_references(self) -> None:
+        cases = {
+            "fenced": "```infographic\ninfographic chart-bar-plain-text\n```\n",
+            "dynamic": "<Infographic syntax={chartSyntax} />\n",
+            "invalid": "<Infographic syntax={`chart-bar-plain-text\ndata`} />\n",
+            "indented-attribute": "<Infographic\n  syntax={`infographic chart-bar-plain-text\ndata\n  title X`}\n/>\n",
+            "missing-mdx-indent": "<Infographic syntax={`infographic chart-bar-plain-text\ndata\n  title X`} />\n",
+        }
+        for name, source in cases.items():
+            with self.subTest(name=name), tempfile.TemporaryDirectory() as temporary_directory:
+                document = Path(temporary_directory) / "doc.mdx"
+                document.write_text(source, encoding="utf-8")
+                completed = subprocess.run(
+                    ["python3", str(SCRIPT), str(document), "--validate"],
+                    capture_output=True,
+                    text=True,
+                )
+                self.assertEqual(1, completed.returncode)
+                self.assertIn("Infographic", completed.stdout)
 
     def test_mermaid_measurement_nodes_remain_laid_out_during_render(self) -> None:
         styles = (PORTAL_ROOT / "app/global.css").read_text(encoding="utf-8")
@@ -56,19 +94,21 @@ class CompilePortalDocumentTest(unittest.TestCase):
     def test_generic_report_components_are_registered_with_fallbacks(self) -> None:
         registry = json.loads((PORTAL_ROOT / "portal-capabilities.json").read_text(encoding="utf-8"))
         tools = {item["id"]: item for item in registry["contentTools"]}
-        for tool_id in ("profile", "info-grid", "structured-steps", "content-panel", "grouped-board"):
+        for tool_id in ("persona-brief", "field-list", "panel", "board", "evidence-step"):
             self.assertEqual("registered", tools[tool_id]["status"])
             self.assertTrue(tools[tool_id]["fallback"])
         components = (PORTAL_ROOT / "components/document-blocks.tsx").read_text(encoding="utf-8")
         styles = (PORTAL_ROOT / "app/global.css").read_text(encoding="utf-8")
-        for component in ("Profile", "InfoGrid", "StructuredSteps", "ContentPanel", "GroupedBoard"):
+        for component in ("PersonaBrief", "FieldList", "Panel", "Board"):
             self.assertIn(f"function {component}", components)
         self.assertIn("@media print", styles)
-        self.assertIn(".gf-profile", styles)
-        self.assertIn(".gf-grouped-board", styles)
-        self.assertNotIn("P0", components)
-        self.assertNotIn("P1", components)
-        self.assertNotIn("P2", components)
+        self.assertIn(".gf-persona-brief", styles)
+        self.assertIn(".gf-board", styles)
+        self.assertIn("level?: 2 | 3 | 4", components)
+        self.assertIn("identity?: string", components)
+        self.assertIn("tone?: 'neutral' | 'info' | 'warning' | 'critical'", components)
+        self.assertIn("group.tone ?? 'neutral'", components)
+        self.assertNotIn("group.title.toLowerCase", components)
 
     def test_compiles_generic_modules_and_resolves_imported_image(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
@@ -93,13 +133,13 @@ class CompilePortalDocumentTest(unittest.TestCase):
             self.assertEqual(3, len(presentation["modules"]))
             self.assertEqual("/document-assets/report/zhao.png", presentation["modules"][1]["items"][0]["image"])
 
-    def test_profile_image_alt_is_available_as_a_source_image(self) -> None:
+    def test_persona_brief_image_alt_is_available_as_a_source_image(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
             root = Path(temporary_directory)
             document = root / "report.mdx"
             manifest = root / "report.portal.json"
             document.write_text(
-                '<Profile name="赵宁" image={{ alt: "赵宁人物画像", src: "/document-assets/report/zhao.png" }} />\n',
+                '<PersonaBrief name="赵宁" image={{ alt: "赵宁人物画像", src: "/document-assets/report/zhao.png" }} />\n',
                 encoding="utf-8",
             )
             manifest.write_text(json.dumps({
@@ -124,13 +164,13 @@ class CompilePortalDocumentTest(unittest.TestCase):
                 payload["presentation"]["modules"][0]["items"][0]["image"],
             )
 
-    def test_card_source_image_alt_resolves_a_profile_image(self) -> None:
+    def test_card_source_image_alt_resolves_a_persona_brief_image(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
             root = Path(temporary_directory)
             document = root / "report.mdx"
             manifest = root / "report.portal.json"
             document.write_text(
-                '<Profile name="赵宁" image={{ src: "/document-assets/report/zhao.png", alt: "赵宁人物画像" }} />\n',
+                '<PersonaBrief name="赵宁" image={{ src: "/document-assets/report/zhao.png", alt: "赵宁人物画像" }} />\n',
                 encoding="utf-8",
             )
             manifest.write_text(json.dumps({
@@ -152,14 +192,14 @@ class CompilePortalDocumentTest(unittest.TestCase):
             self.assertEqual("/document-assets/report/zhao.png", card["image"])
             self.assertEqual("赵宁人物画像", card["imageAlt"])
 
-    def test_rejects_ambiguous_alt_across_markdown_and_profile_images(self) -> None:
+    def test_rejects_ambiguous_alt_across_markdown_and_persona_brief_images(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
             root = Path(temporary_directory)
             document = root / "report.mdx"
             manifest = root / "report.portal.json"
             document.write_text(
                 '![代表人物](/document-assets/report/first.png)\n\n'
-                '<Profile name="示例" image={{ src: "/document-assets/report/second.png", alt: "代表人物" }} />\n',
+                '<PersonaBrief name="示例" image={{ src: "/document-assets/report/second.png", alt: "代表人物" }} />\n',
                 encoding="utf-8",
             )
             manifest.write_text(json.dumps({
@@ -186,7 +226,7 @@ class CompilePortalDocumentTest(unittest.TestCase):
             manifest = root / "report.portal.json"
             src = "/document-assets/report/person.png"
             document.write_text(
-                f'![代表人物]({src})\n\n<Profile name="示例" image={{{{ src: "{src}", alt: "代表人物" }}}} />\n',
+                f'![代表人物]({src})\n\n<PersonaBrief name="示例" image={{{{ src: "{src}", alt: "代表人物" }}}} />\n',
                 encoding="utf-8",
             )
             manifest.write_text(json.dumps({
@@ -226,6 +266,57 @@ class CompilePortalDocumentTest(unittest.TestCase):
             document.write_text("# 普通文档\n", encoding="utf-8")
             completed = subprocess.run(["python3", str(SCRIPT), str(document)], check=True, capture_output=True, text=True)
             self.assertEqual([], json.loads(completed.stdout)["presentation"]["modules"])
+
+    def test_rejects_invalid_or_orphaned_citations(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            document = Path(temporary_directory) / "doc.mdx"
+            document.write_text(
+                '<Citation source="S01" />\n<SourceIndex><Source id="S02">孤立来源</Source></SourceIndex>\n',
+                encoding="utf-8",
+            )
+            completed = subprocess.run(
+                ["python3", str(SCRIPT), str(document), "--validate"], capture_output=True, text=True,
+            )
+            self.assertEqual(1, completed.returncode)
+            self.assertIn("引用目标不存在：S01", completed.stdout)
+            self.assertIn("存在孤立来源：S02", completed.stdout)
+
+    def test_accepts_stable_citation_mapping_and_warns_on_long_field_list_values(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            document = Path(temporary_directory) / "doc.mdx"
+            document.write_text(
+                '<FieldList items={[{ label: "说明", value: "' + ('长文本' * 30) + '" }]} />\n'
+                '<Citation source="S01" />\n<SourceIndex><Source id="S01">有效来源</Source></SourceIndex>\n',
+                encoding="utf-8",
+            )
+            completed = subprocess.run(
+                ["python3", str(SCRIPT), str(document), "--validate"], check=True, capture_output=True, text=True,
+            )
+            self.assertIn("Panel 正文", completed.stderr)
+            self.assertTrue(json.loads(completed.stdout)["warnings"])
+
+    def test_screenshot_requires_src_and_warns_when_caption_is_missing(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            missing_caption = root / "missing-caption.mdx"
+            missing_caption.write_text('<Screenshot src="./screen.png" title="结果页" />\n', encoding="utf-8")
+            completed = subprocess.run(
+                ["python3", str(SCRIPT), str(missing_caption), "--validate"],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            self.assertIn("缺少 caption", completed.stderr)
+
+            missing_src = root / "missing-src.mdx"
+            missing_src.write_text('<Screenshot title="结果页" caption="界面证据" />\n', encoding="utf-8")
+            rejected = subprocess.run(
+                ["python3", str(SCRIPT), str(missing_src), "--validate"],
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(1, rejected.returncode)
+            self.assertIn("src 必须是非空字符串", rejected.stdout)
 
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 interface:
-  display_name: "User Journey Interviewer"
-  short_description: "Turn approved BRDs into traceable user journeys"
+  display_name: "用户旅程访谈"
+  short_description: "将已批准 BRD 转化为对齐且可追溯的用户旅程"
   icon_small: "./assets/gainfactor-pm-logo-small.png"
   icon_large: "./assets/gainfactor-pm-logo.png"
-  default_prompt: "Use $uc-interviewer to confirm the latest BRD baseline and turn it into an aligned, traceable USER_JOURNEY artifact."
+  default_prompt: "使用 $uc-interviewer 确认最新 BRD 基线，并将其转化为对齐且可追溯的 USER_JOURNEY 产物。"

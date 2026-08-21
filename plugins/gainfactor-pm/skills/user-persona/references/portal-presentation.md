@@ -22,7 +22,9 @@
 - `eyebrow`：使用背景或需求类别，不用抽象四字标签；
 - `description`：具体使用背景；
 - `fields`：核心目标、期望结果、用户优先级；
-- 图片：正文图片来自 `Profile.image`；卡片的 `sourceImageAlt` 填写对应 `Profile.image.alt`。由 `$document-publisher` 在导入后解析并写入门户资产 URL；本 Skill 不重复插入 Markdown 图片，也不预测门户资产路径。
+- 图片：正文图片来自 `PersonaBrief.image`；卡片的 `sourceImageAlt` 填写对应 `PersonaBrief.image.alt`。由 `$document-publisher` 在导入后解析并写入门户资产 URL；本 Skill 不重复插入 Markdown 图片，也不预测门户资产路径。
+
+卡片顺序必须直接复用 G5 冻结的人物顺序清单，与模块一正文概览和模块二 PersonaBrief 顺序完全一致；不得按图片生成时间、姓名或写入先后重新排序。
 
 不强制 `quote`；报告未保留有价值且自然的原话时省略。卡片不放完整人口信息、行为路径、痛点、功能、Agent ID 或反馈索引。
 
@@ -34,7 +36,7 @@
 - P0/P1/P2 功能详情与风险；
 - 正文没有的新结论。
 
-模块三的需求关系和功能优先级使用正文 `GroupedBoard`、必要的 Markdown 矩阵和解释文字表达，不重复进 Presentation。
+模块三的需求关系和功能优先级使用正文 `Board`、必要的 Markdown 矩阵和解释文字表达，不重复进 Presentation。
 
 ## 写入与校验节奏
 
@@ -42,4 +44,5 @@
 - 每个画像完成后向 `cards` 草稿增加对应人物；
 - 草稿不发布为最终清单；全部三模块完成并整体优化后再统一校验；
 - `sourceImageAlt` 未解析、对应多个不同图片、人物卡缺姓名/定位/背景/核心目标/期望结果/优先级，或 manifest 引入正文外判断时阻断发布；
-- 最终由 `$document-publisher` 校验，再交给 `$document-review` 挂载门户，不允许发布阶段补写业务内容。
+- cards 与正文人物数量、姓名或顺序不一致时阻断发布；
+- 最终由 `$document-publisher` 校验、挂载并验证门户，不允许发布阶段补写业务内容。

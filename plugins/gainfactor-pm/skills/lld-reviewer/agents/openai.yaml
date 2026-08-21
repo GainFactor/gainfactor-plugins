@@ -1,6 +1,6 @@
 interface:
-  display_name: "LLD Reviewer"
-  short_description: "Review low-level designs for drift and risks"
+  display_name: "LLD 评审"
+  short_description: "评审低层设计的偏差、缺口与实施风险"
   icon_small: "./assets/gainfactor-pm-logo-small.png"
   icon_large: "./assets/gainfactor-pm-logo.png"
-  default_prompt: "Use $lld-reviewer to review this LLD for drift, gaps, and implementation risk."
+  default_prompt: "使用 $lld-reviewer 评审这份 LLD 的偏差、缺口和实施风险。"

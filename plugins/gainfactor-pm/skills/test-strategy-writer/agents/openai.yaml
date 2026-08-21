@@ -1,6 +1,6 @@
 interface:
-  display_name: "Test Strategy Writer"
-  short_description: "Draft test strategies from PRD, API, and HLD"
+  display_name: "测试策略编写"
+  short_description: "根据 PRD、API 契约与 HLD 编写测试策略"
   icon_small: "./assets/gainfactor-pm-logo-small.png"
   icon_large: "./assets/gainfactor-pm-logo.png"
-  default_prompt: "Use $test-strategy-writer to draft a test strategy from this PRD, API contract, and HLD."
+  default_prompt: "使用 $test-strategy-writer 根据这份 PRD、API 契约和 HLD 编写测试策略。"

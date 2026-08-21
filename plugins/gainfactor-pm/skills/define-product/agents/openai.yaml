@@ -1,6 +1,6 @@
 interface:
-  display_name: "Define Product"
-  short_description: "Define new, released, or internal products"
+  display_name: "产品定义"
+  short_description: "定义新产品、已发布产品或内部效能平台"
   icon_small: "assets/gainfactor-pm-logo-small.png"
   icon_large: "assets/gainfactor-pm-logo.png"
-  default_prompt: "Use $define-product to define a new product or internal efficiency platform, or identify and research an already-released product by name and capture its evidence-backed product definition."
+  default_prompt: "使用 $define-product 定义新产品或内部效能平台，或按名称识别并研究已发布产品，形成有证据支持的产品定义。"

@@ -1,6 +1,6 @@
 interface:
-  display_name: "LLD Writer"
-  short_description: "Draft low-level designs from HLD and contracts"
+  display_name: "LLD 编写"
+  short_description: "根据 HLD 与相关契约编写低层设计"
   icon_small: "./assets/gainfactor-pm-logo-small.png"
   icon_large: "./assets/gainfactor-pm-logo.png"
-  default_prompt: "Use $lld-writer to draft an LLD from this PRD, HLD, and API contract."
+  default_prompt: "使用 $lld-writer 根据这份 PRD、HLD 和 API 契约编写 LLD。"

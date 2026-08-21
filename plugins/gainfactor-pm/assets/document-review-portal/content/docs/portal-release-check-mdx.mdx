@@ -1,0 +1,45 @@
+---
+title: MDX AntV 引用检查
+description: 验证真实门户 MDX 文档中的 Infographic 引用。
+---
+
+<Infographic syntax={`infographic chart-bar-plain-text
+  data
+    title MDX 图表引用检查
+    values
+      - label 第一项
+        value 42
+      - label 第二项
+        value 68`} caption="MDX → Infographic 图表" />
+
+<Infographic syntax={`infographic relation-dagre-flow-tb-badge-card
+  data
+    title MDX 关系图引用检查
+    nodes
+      - id source
+        label 来源
+      - id publish
+        label 发布
+    relations
+      source - 校验后进入 -> publish`} caption="MDX → Infographic 关系图" />
+
+## 产品截图引用检查
+
+<ScreenshotGallery columns={2}>
+  <Screenshot src="/screenshot-check-desktop.svg" title="桌面端结果页" caption="验证桌面截图完整显示且不裁切。" evidenceId="E-S01" device="desktop" step={1} />
+  <Screenshot src="/screenshot-check-mobile.svg" title="移动端长页面" caption="验证手机长图以窄卡片和 70vh 上限展示。" evidenceId="E-S02" device="mobile" step={2} />
+</ScreenshotGallery>
+
+<ScreenshotGallery layout="rail">
+  <Screenshot src="/screenshot-check-desktop.svg" title="输入" caption="验证横向证据带首项。" evidenceId="E-R01" />
+  <Screenshot src="/screenshot-check-mobile.svg" title="过程" caption="验证横向滚动与移动端截图。" evidenceId="E-R02" device="mobile" />
+  <Screenshot src="/screenshot-check-desktop.svg" title="结果" caption="验证证据带末项与点击放大。" evidenceId="E-R03" />
+</ScreenshotGallery>
+
+<EvidenceStep step={3} title="核对截图证据" evidence={<Screenshot src="/screenshot-check-mobile.svg" title="步骤证据" caption="截图与旅程步骤并列展示。" evidenceId="E-S03" device="mobile" />}>
+  用户对照界面确认结果与预期一致。
+</EvidenceStep>
+
+裸 Markdown 图片使用安全尺寸：
+
+![桌面界面安全默认样式](/screenshot-check-desktop.svg)

@@ -3,7 +3,9 @@ export type ReviewIssue = { id: string; severity: ReviewSeverity; title: string;
 
 type PortalModuleBase = { id: string; title?: string; description?: string };
 export type PortalModule =
-  | (PortalModuleBase & { type: 'metrics'; items: Array<{ label: string; value: string }> })
+  | (PortalModuleBase & { type: 'metrics'; items: Array<{
+      label: string; value: string; note?: string; change?: string; definition?: string; source?: string;
+    }> })
   | (PortalModuleBase & { type: 'cards'; items: Array<{
       title: string; eyebrow?: string; description?: string; quote?: string;
       image?: string; imageAlt?: string; fields?: Array<{ label: string; value: string }>;
@@ -19,7 +21,10 @@ export type PortalPresentation = {
 
 export type DocumentPortalEntry = {
   sourceSlug: string;
-  group: 'product-requirements' | 'technical-design' | 'quality-delivery' | 'other';
+  sourcePath?: string;
+  artifactKey?: string;
+  group: string;
+  groupTitle?: string;
   documentType: string;
   collection: string;
   version: string;

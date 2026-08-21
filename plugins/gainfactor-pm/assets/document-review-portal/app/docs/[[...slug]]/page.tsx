@@ -15,6 +15,7 @@ import { BadgeCheck, CalendarDays, FileText, Tag, UserRound } from 'lucide-react
 import { portalData } from '@/lib/portal-data';
 import { ReviewIssues, ReviewNavigation } from '@/components/review-panels';
 import { ReportPresentation } from '@/components/report-presentation';
+import { Theme } from '@radix-ui/themes';
 
 export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
   const params = await props.params;
@@ -53,14 +54,15 @@ export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
             <ViewOptionsPopover markdownUrl={markdownUrl} />
           </div>
         </div>
-        <dl className="prd-metadata" aria-label="文档信息">
-          <div><Tag aria-hidden="true" /><span><dt>版本</dt><dd>{portalDocument.version}</dd></span></div>
-          <div><BadgeCheck aria-hidden="true" /><span><dt>状态</dt><dd><span className="prd-status">{portalDocument.status}</span></dd></span></div>
-          <div><UserRound aria-hidden="true" /><span><dt>负责人</dt><dd>{portalDocument.owner}</dd></span></div>
-          <div><CalendarDays aria-hidden="true" /><span><dt>更新时间</dt><dd>{portalDocument.updated}</dd></span></div>
-        </dl>
+        <div className="prd-metadata" aria-label="文档信息" role="list">
+          <div role="listitem"><Tag aria-hidden="true" /><span><span className="prd-metadata-label">版本</span><span className="prd-metadata-value">{portalDocument.version}</span></span></div>
+          <div role="listitem"><BadgeCheck aria-hidden="true" /><span><span className="prd-metadata-label">状态</span><span className="prd-metadata-value"><span className="prd-status">{portalDocument.status}</span></span></span></div>
+          <div role="listitem"><UserRound aria-hidden="true" /><span><span className="prd-metadata-label">负责人</span><span className="prd-metadata-value">{portalDocument.owner}</span></span></div>
+          <div role="listitem"><CalendarDays aria-hidden="true" /><span><span className="prd-metadata-label">更新时间</span><span className="prd-metadata-value">{portalDocument.updated}</span></span></div>
+        </div>
       </header>
       <ReportPresentation data={portalDocument.presentation} />
+      <Theme asChild appearance="inherit" accentColor="orange" grayColor="slate" radius="medium" scaling="100%" panelBackground="solid" hasBackground={false}>
       <DocsBody>
         <MDX
           components={getMDXComponents({
@@ -69,6 +71,7 @@ export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
           })}
         />
       </DocsBody>
+      </Theme>
       </main>
       {hasReviewIssues ? <ReviewIssues conclusion={portalDocument.review.conclusion} issues={portalDocument.review.issues} /> : null}
       </div>

@@ -1,6 +1,6 @@
 interface:
-  display_name: "Guardrails Writer"
-  short_description: "Create or update project guardrails and workflow hooks"
+  display_name: "项目护栏编写"
+  short_description: "创建或更新项目 Guardrails 与工作流钩子"
   icon_small: "./assets/gainfactor-pm-logo-small.png"
   icon_large: "./assets/gainfactor-pm-logo.png"
-  default_prompt: "Use $guardrails-writer to create or update project-level Guardrails when architecture, platform, compliance, incidents, or repeated review issues require a governance baseline."
+  default_prompt: "当架构、平台、合规、事故或重复评审问题需要治理基线时，使用 $guardrails-writer 创建或更新项目级 Guardrails。"

@@ -1,6 +1,6 @@
 interface:
-  display_name: "BRD Interviewer"
-  short_description: "Turn rough ideas into a structured BRD"
+  display_name: "BRD 需求访谈"
+  short_description: "通过访谈把初步想法整理为结构化 BRD"
   icon_small: "./assets/gainfactor-pm-logo-small.png"
   icon_large: "./assets/gainfactor-pm-logo.png"
-  default_prompt: "Use $brd-interviewer to turn this rough idea into a structured BRD."
+  default_prompt: "使用 $brd-interviewer 通过访谈把这个初步想法整理为结构化 BRD。"

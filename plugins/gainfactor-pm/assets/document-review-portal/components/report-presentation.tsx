@@ -14,6 +14,12 @@ function PortalModuleView({ module }: { module: PortalModule }) {
     <ModuleHeading module={module} />
     <div className="report-summary-grid">{module.items.map((item) => <article key={`${item.label}-${item.value}`} className="report-summary-card">
       <span>{item.label}</span><strong>{item.value}</strong>
+      {item.note ? <p>{item.note}</p> : null}
+      {item.change || item.definition || item.source ? <dl>
+        {item.change ? <div><dt>同比</dt><dd>{item.change}</dd></div> : null}
+        {item.definition ? <div><dt>口径</dt><dd>{item.definition}</dd></div> : null}
+        {item.source ? <div><dt>来源</dt><dd>{item.source}</dd></div> : null}
+      </dl> : null}
     </article>)}</div>
   </section>;
 
